@@ -26,6 +26,7 @@ import {
 import { DocumentItem, DocumentChunk, DocumentContent } from "@/lib/types";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/components/Toast";
 
 interface SourcesViewProps {
   onUpload: () => void;
@@ -33,6 +34,7 @@ interface SourcesViewProps {
 
 export function SourcesView({ onUpload }: SourcesViewProps) {
   const { currentProject, user } = useAuth();
+  const { toast } = useToast();
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -111,15 +113,14 @@ export function SourcesView({ onUpload }: SourcesViewProps) {
     setRetryingDocId(docId);
     try {
       await api.retryDocument(docId);
-      setActionMsg({ type: "success", text: "Reprocessing completed successfully." });
-      setTimeout(() => setActionMsg(null), 3000);
+      toast.success("Document re-processed successfully.");
       await loadDocs();
       if (inspectingDoc?.id === docId) {
         const updated = await api.getDocument(docId);
         handleOpenViewer(updated);
       }
     } catch (err: any) {
-      setActionMsg({ type: "error", text: err.message || "Retry processing failed." });
+      toast.error(err.message || "Retry processing failed.");
     } finally {
       setRetryingDocId(null);
     }
@@ -130,12 +131,11 @@ export function SourcesView({ onUpload }: SourcesViewProps) {
     setDeleting(true);
     try {
       await api.deleteDocument(currentProject.id, deletingDoc.id);
+      toast.success(`Document '${deletingDoc.filename}' deleted successfully.`);
       setDeletingDoc(null);
-      setActionMsg({ type: "success", text: `Document '${deletingDoc.filename}' deleted successfully.` });
-      setTimeout(() => setActionMsg(null), 3000);
       await loadDocs();
     } catch (err: any) {
-      setActionMsg({ type: "error", text: err.message || "Failed to delete document." });
+      toast.error(err.message || "Failed to delete document.");
     } finally {
       setDeleting(false);
     }
@@ -144,6 +144,7 @@ export function SourcesView({ onUpload }: SourcesViewProps) {
   function copyTextToClipboard(text: string) {
     navigator.clipboard.writeText(text);
     setCopied(true);
+    toast.info("Copied to clipboard!");
     setTimeout(() => setCopied(false), 2000);
   }
 
@@ -163,6 +164,18 @@ export function SourcesView({ onUpload }: SourcesViewProps) {
 
     return matchesSearch && matchesFormat && matchesStatus;
   });
+
+  if (!currentProject) {
+    return (
+      <div className="bg-white rounded-xl border border-dashed border-slate-200 p-12 text-center space-y-3 my-8 animate-in fade-in duration-300">
+        <FileText className="w-10 h-10 text-slate-300 mx-auto" />
+        <h3 className="text-base font-bold text-slate-800">No Project Selected</h3>
+        <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          Please select a workspace from the left sidebar to inspect and ingest project documentation.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -367,25 +380,25 @@ export function SourcesView({ onUpload }: SourcesViewProps) {
 
                       {/* Characters */}
                       <td className="py-3 px-3 text-slate-500 font-mono text-[11px]">
-                        {doc.extracted_character_count ? doc.extracted_character_count.toLocaleString() : "—"}
+                        {doc.extracted_character_count ? doc.extracted_character_count.toLocaleString() : "-"}
                       </td>
 
                       {/* Status */}
                       <td className="py-3 px-3">
                         {isProcessed && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
                             <CheckCircle2 className="w-3 h-3" />
                             Processed
                           </span>
                         )}
                         {isProcessing && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-md">
                             <Loader2 className="w-3 h-3 animate-spin" />
                             Processing
                           </span>
                         )}
                         {isFailed && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-md">
                             <AlertCircle className="w-3 h-3" />
                             Failed
                           </span>

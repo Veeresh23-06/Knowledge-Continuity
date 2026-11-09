@@ -20,9 +20,11 @@ import {
 import { ProjectMember, UserRole, User } from "@/lib/types";
 import { api } from "@/lib/api";
 import { useAuth, DEMO_CREDENTIALS } from "@/lib/auth-context";
+import { useToast } from "@/components/Toast";
 
 export function TeamView() {
   const { currentProject, user, switchDemoRole } = useAuth();
+  const { toast } = useToast();
   const [members, setMembers] = useState<ProjectMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [emailInput, setEmailInput] = useState("");
@@ -83,12 +85,12 @@ export function TeamView() {
     setSuccess(null);
     try {
       await api.addMember(currentProject.id, emailInput.trim(), roleInput);
+      toast.success(`User '${emailInput.trim()}' added as ${roleInput}.`);
       setEmailInput("");
       setSearchResults([]);
-      setSuccess(`Added member successfully.`);
-      setTimeout(() => setSuccess(null), 3500);
       await loadMembers();
     } catch (err: any) {
+      toast.error(err.message || "Failed to add project member");
       setError(err.message || "Failed to add project member");
     } finally {
       setIsAdding(false);
@@ -100,10 +102,10 @@ export function TeamView() {
     setError(null);
     try {
       await api.updateMemberRole(currentProject.id, userId, newRole);
-      setSuccess("Member role updated successfully.");
-      setTimeout(() => setSuccess(null), 3000);
+      toast.success(`Member role updated to ${newRole}.`);
       await loadMembers();
     } catch (err: any) {
+      toast.error(err.message || "Failed to update member role");
       setError(err.message || "Failed to update member role");
     }
   }
@@ -114,10 +116,10 @@ export function TeamView() {
     setError(null);
     try {
       await api.removeMember(currentProject.id, userId);
-      setSuccess("Member removed from project.");
-      setTimeout(() => setSuccess(null), 3000);
+      toast.info("Member removed from project.");
       await loadMembers();
     } catch (err: any) {
+      toast.error(err.message || "Failed to remove member");
       setError(err.message || "Failed to remove member");
     }
   }
@@ -176,6 +178,18 @@ export function TeamView() {
     },
   ];
 
+  if (!currentProject) {
+    return (
+      <div className="bg-white rounded-xl border border-dashed border-slate-200 p-12 text-center space-y-3 my-8 animate-in fade-in duration-300">
+        <Users className="w-10 h-10 text-slate-300 mx-auto" />
+        <h3 className="text-base font-bold text-slate-800">No Project Selected</h3>
+        <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          Please select a workspace from the left sidebar to view and manage team member permissions.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Header */}
@@ -206,7 +220,19 @@ export function TeamView() {
             const isCurrent = user?.role === r;
             const cred = DEMO_CREDENTIALS[r];
 
-            return (
+            if (!currentProject) {
+    return (
+      <div className="bg-white rounded-xl border border-dashed border-slate-200 p-12 text-center space-y-3 my-8 animate-in fade-in duration-300">
+        <Users className="w-10 h-10 text-slate-300 mx-auto" />
+        <h3 className="text-base font-bold text-slate-800">No Project Selected</h3>
+        <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          Please select a workspace from the left sidebar to view and manage team member permissions.
+        </p>
+      </div>
+    );
+  }
+
+  return (
               <button
                 key={r}
                 onClick={() => switchDemoRole(r)}
@@ -289,7 +315,7 @@ export function TeamView() {
                     <span
                       className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
                         m.role === "ADMIN"
-                          ? "bg-purple-50 text-purple-700 border border-purple-200"
+                          ? "bg-slate-100 text-slate-800 border border-slate-300"
                           : m.role === "PROJECT_MANAGER"
                           ? "bg-teal-50 text-teal-700 border border-teal-200"
                           : m.role === "OUTGOING_MEMBER"
@@ -334,7 +360,7 @@ export function TeamView() {
                 <input
                   type="email"
                   required
-                  placeholder="colleague@webhunter.org"
+                  placeholder="colleague@knowledgecontinuity.io"
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
                   className="w-full text-xs border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:outline-teal-600"

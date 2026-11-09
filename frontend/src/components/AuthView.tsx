@@ -76,21 +76,21 @@ export function AuthView() {
     <div className="min-h-screen w-full bg-slate-900 flex items-center justify-center p-4 selection:bg-teal-500 selection:text-white">
       {/* Background ambient lighting */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-teal-500/10 rounded-2xl blur-3xl"></div>
+        <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-cyan-500/10 rounded-2xl blur-3xl"></div>
       </div>
 
       <div className="w-full max-w-md relative z-10 space-y-6">
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-teal-500/20 border border-teal-500/40 text-teal-400 mb-1 shadow-lg shadow-teal-500/10">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-teal-500/20 border border-teal-500/40 text-teal-400 mb-1 shadow-lg shadow-teal-500/10">
             <Sparkles className="w-6 h-6 text-teal-400" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white">
             Knowledge Continuity
           </h1>
           <p className="text-xs text-slate-400 max-w-xs mx-auto">
-            Evidence-Linked Project Knowledge Handover Platform • Team Web_hunter
+            Evidence-Linked Project Knowledge Handover Platform
           </p>
         </div>
 

@@ -1,5 +1,4 @@
 # KNOWLEDGE CONTINUITY
-### Team: Web_hunter
 **Evidence-Linked Project Knowledge Handover Platform**
 
 ---
@@ -293,7 +292,7 @@ All demo accounts use password: `Password123!`
 ## 7. Team Details
 
 - **Project**: Knowledge Continuity
-- **Team**: Web_hunter
 - **Event**: Hackathon 2026
-#   T e a m - W e b _ h u n t e r s  
+#   T e a m - W e b _ h u n t e r s 
+ 
  

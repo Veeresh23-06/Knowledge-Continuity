@@ -65,7 +65,7 @@ def test_health_and_root_endpoints():
     print("  -> /health: OK -", health)
 
     rt = root()
-    assert rt["team"] == "Web_hunter"
+    assert rt["service"] == "Knowledge Continuity API"
     assert rt["status"] == "HEALTHY"
     print("  -> /: OK -", rt)
 

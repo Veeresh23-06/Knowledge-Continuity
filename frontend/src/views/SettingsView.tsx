@@ -408,7 +408,7 @@ export function SettingsView() {
                       </span>
                     </td>
                     <td className="py-2.5 px-3">{log.user_name || log.user_id || "System"}</td>
-                    <td className="py-2.5 px-3 text-slate-500">{log.entity_type || "—"}</td>
+                    <td className="py-2.5 px-3 text-slate-500">{log.entity_type || "-"}</td>
                     <td className="py-2.5 px-3 text-slate-500 max-w-xs truncate font-mono text-[11px]">
                       {JSON.stringify(log.details)}
                     </td>

@@ -13,6 +13,7 @@ from backend.app.schemas import TokenData
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
+optional_security = HTTPBearer(auto_error=False)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
@@ -30,20 +31,15 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
-def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db)
-) -> User:
+def decode_user_token(token: str, db: Session) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    token = credentials.credentials
     try:
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.ALGORITHM])
         user_id: str = payload.get("sub")
-        email: str = payload.get("email")
         if user_id is None:
             raise credentials_exception
     except jwt.PyJWTError:
@@ -53,6 +49,30 @@ def get_current_user(
     if user is None or not user.is_active:
         raise credentials_exception
     return user
+
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db)
+) -> User:
+    return decode_user_token(credentials.credentials, db)
+
+def get_current_user_from_header_or_param(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_security),
+    token: Optional[str] = None,
+    db: Session = Depends(get_db)
+) -> User:
+    token_str = None
+    if credentials and credentials.credentials:
+        token_str = credentials.credentials
+    elif token:
+        token_str = token
+    if not token_str:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return decode_user_token(token_str, db)
 
 def require_role(allowed_roles: List[str]):
     def role_checker(current_user: User = Depends(get_current_user)) -> User:

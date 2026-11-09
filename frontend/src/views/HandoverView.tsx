@@ -23,14 +23,17 @@ import {
 import { HandoverDossier } from "@/lib/types";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/components/Toast";
 
 export function HandoverView() {
   const { currentProject, user } = useAuth();
+  const { toast } = useToast();
   const [handovers, setHandovers] = useState<HandoverDossier[]>([]);
   const [selectedHandover, setSelectedHandover] = useState<HandoverDossier | null>(null);
   const [loading, setLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [customNotes, setCustomNotes] = useState("");
 
   const isIncoming = user?.role === "INCOMING_MEMBER";
@@ -60,6 +63,18 @@ export function HandoverView() {
     loadHandovers();
   }, [currentProject, user?.role]);
 
+  if (!currentProject) {
+    return (
+      <div className="bg-white rounded-xl border border-dashed border-slate-200 p-12 text-center space-y-3 my-8 animate-in fade-in duration-300">
+        <FileCheck2 className="w-10 h-10 text-slate-300 mx-auto" />
+        <h3 className="text-base font-bold text-slate-800">No Project Selected</h3>
+        <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          Please select a workspace from the left sidebar to synthesize or inspect the official 13-section handover dossier.
+        </p>
+      </div>
+    );
+  }
+
   async function handleGenerate() {
     if (!currentProject) return;
     setIsGenerating(true);
@@ -68,8 +83,9 @@ export function HandoverView() {
       const newHandover = await api.generateHandover(currentProject.id, targetRole, customNotes);
       await loadHandovers();
       setSelectedHandover(newHandover);
+      toast.success("13-Section Handover Dossier synthesized successfully!");
     } catch (err: any) {
-      alert(err.message || "Failed to generate handover dossier.");
+      toast.error(err.message || "Failed to generate handover dossier.");
     } finally {
       setIsGenerating(false);
     }
@@ -82,17 +98,27 @@ export function HandoverView() {
       const updated = await api.approveHandover(currentProject.id, selectedHandover.id);
       await loadHandovers();
       setSelectedHandover(updated);
+      toast.success("Handover dossier approved and signed off by Project Manager!");
     } catch (err: any) {
-      alert(err.message || "Failed to approve handover");
+      toast.error(err.message || "Failed to approve handover");
     } finally {
       setIsApproving(false);
     }
   }
 
-  function handleDownloadPdf() {
+  async function handleDownloadPdf() {
     if (!currentProject || !selectedHandover) return;
-    const url = api.getPdfDownloadUrl(currentProject.id, selectedHandover.id);
-    window.open(url, "_blank");
+    setIsDownloadingPdf(true);
+    try {
+      const sanitizedName = (selectedHandover.title || "Handover_Report")
+        .replace(/[^a-zA-Z0-9_\-]/g, "_");
+      await api.downloadPdf(currentProject.id, selectedHandover.id, `${sanitizedName}.pdf`);
+      toast.success("Official Handover PDF report downloaded!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to export PDF report.");
+    } finally {
+      setIsDownloadingPdf(false);
+    }
   }
 
   const content = selectedHandover?.content_json;
@@ -125,10 +151,20 @@ export function HandoverView() {
           {selectedHandover && (
             <button
               onClick={handleDownloadPdf}
-              className="flex items-center gap-1.5 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg shadow-xs transition"
+              disabled={isDownloadingPdf}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-60 text-white text-xs font-bold rounded-lg shadow-xs transition cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5" />
-              Export PDF Report
+              {isDownloadingPdf ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-400" />
+                  Exporting PDF...
+                </>
+              ) : (
+                <>
+                  <Download className="w-3.5 h-3.5 text-teal-400" />
+                  Export PDF Report
+                </>
+              )}
             </button>
           )}
 
@@ -456,7 +492,7 @@ export function HandoverView() {
                       </span>
                     </div>
                     <p className="text-slate-600">{r.details}</p>
-                    <p className="text-[11px] text-teal-800 font-medium">💡 Mitigation: {r.mitigation}</p>
+                    <p className="text-[11px] text-teal-800 font-medium">Mitigation: {r.mitigation}</p>
                   </div>
                 ))}
               </div>
@@ -497,7 +533,7 @@ export function HandoverView() {
                     <p className="text-xs text-slate-700 leading-relaxed">{act.action}</p>
                     {act.deliverable && (
                       <span className="text-[11px] text-teal-700 block font-semibold pt-1">
-                        🎯 Deliverable: {act.deliverable}
+                        Deliverable: {act.deliverable}
                       </span>
                     )}
                   </div>

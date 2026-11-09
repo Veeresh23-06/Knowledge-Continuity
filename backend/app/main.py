@@ -39,7 +39,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="Evidence-Linked Project Knowledge Handover Platform - Team Web_hunter (Phase 2 Auth & Project Management)",
+    description="Evidence-Linked Project Knowledge Handover Platform (Phase 2 Auth & Project Management)",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -82,7 +82,6 @@ register_api_routers("/api")
 def root():
     return {
         "service": "Knowledge Continuity API",
-        "team": "Web_hunter",
         "phase": "Phase 2 - Authentication & Project Management",
         "status": "HEALTHY",
         "version": settings.VERSION,

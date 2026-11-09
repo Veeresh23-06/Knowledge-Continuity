@@ -16,6 +16,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 
 interface EvidenceModalProps {
   finding: ExtractedFinding | null;
@@ -24,6 +25,7 @@ interface EvidenceModalProps {
 }
 
 export function EvidenceModal({ finding, onClose, onRefresh }: EvidenceModalProps) {
+  const { toast } = useToast();
   if (!finding) return null;
 
   const [verifying, setVerifying] = useState(false);
@@ -58,9 +60,10 @@ export function EvidenceModal({ finding, onClose, onRefresh }: EvidenceModalProp
         const res = await api.getFindingEvidence(finding.id);
         setVerifyResult(res);
       }
+      toast.success("Quote verification re-evaluated against source text.");
       if (onRefresh) onRefresh();
-    } catch (e) {
-      console.error("Re-verification failed:", e);
+    } catch (e: any) {
+      toast.error(e.message || "Re-verification failed.");
     } finally {
       setVerifying(false);
     }

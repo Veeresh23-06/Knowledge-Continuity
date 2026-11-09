@@ -75,18 +75,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const list = await api.listProjects();
       setProjects(list);
       if (list.length > 0) {
-        setCurrentProject((prev) => {
-          if (!prev) return list[0];
-          const stillExists = list.find((p) => p.id === prev.id);
-          return stillExists || list[0];
-        });
+        const savedId = typeof window !== "undefined" ? localStorage.getItem("kc_current_project_id") : null;
+        if (savedId === "NONE") {
+          setCurrentProject(null);
+          return;
+        }
+        const matched = savedId ? list.find((p) => p.id === savedId) : null;
+        const selected = matched || list[0];
+        setCurrentProject(selected);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("kc_current_project_id", selected.id);
+        }
       } else {
         setCurrentProject(null);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("kc_current_project_id");
+        }
       }
     } catch (e) {
       console.warn("Failed to load projects:", e);
     }
   }
+
+  const handleSetCurrentProject = (p: Project | null) => {
+    setCurrentProject(p);
+    if (typeof window !== "undefined") {
+      if (p) {
+        localStorage.setItem("kc_current_project_id", p.id);
+      } else {
+        localStorage.setItem("kc_current_project_id", "NONE");
+      }
+    }
+  };
 
   async function refreshUser() {
     try {
@@ -173,7 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         switchDemoRole,
         currentProject,
-        setCurrentProject,
+        setCurrentProject: handleSetCurrentProject,
         projects,
         refreshProjects: loadProjects,
         refreshUser,

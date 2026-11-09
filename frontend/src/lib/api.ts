@@ -30,7 +30,10 @@ import {
   AuditLogItem,
 } from "./types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+const API_BASE = rawApiUrl.includes("/api/v1")
+  ? rawApiUrl.replace(/\/+$/, "")
+  : `${rawApiUrl.replace(/\/+$/, "")}/api/v1`;
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -567,12 +570,40 @@ export const api = {
 
   getPdfDownloadUrl(projectId: string, handoverId: string): string {
     const token = getToken();
-    return `${API_BASE}/handovers/${projectId}/${handoverId}/export-pdf?token=${token || ""}`;
+    return `${API_BASE}/handovers/${projectId}/${handoverId}/export-pdf?token=${encodeURIComponent(token || "")}`;
+  },
+
+  async downloadPdf(projectId: string, handoverId: string, filename?: string): Promise<void> {
+    const token = getToken();
+    const url = `${API_BASE}/handovers/${projectId}/${handoverId}/export-pdf?token=${encodeURIComponent(token || "")}`;
+    const response = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+
+    if (!response.ok) {
+      let err = response.statusText;
+      try {
+        const j = await response.json();
+        err = j.detail || err;
+      } catch {}
+      throw new Error(err || `Download failed with status ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = filename || `Handover_${handoverId.substring(0, 8)}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(blobUrl);
   },
 
   // Legacy Dashboard & Analytics stats
-  async getDashboardStats(): Promise<DashboardStats> {
-    return request<DashboardStats>("/analytics/dashboard");
+  async getDashboardStats(projectId?: string): Promise<DashboardStats> {
+    const query = projectId ? `?project_id=${encodeURIComponent(projectId)}` : "";
+    return request<DashboardStats>(`/analytics/dashboard${query}`);
   },
 
   // Audit

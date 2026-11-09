@@ -7,6 +7,7 @@ import { UploadModal } from "@/components/UploadModal";
 import { NewProjectModal } from "@/components/NewProjectModal";
 import { AuthView } from "@/components/AuthView";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/components/Toast";
 
 // Views
 import { DashboardView } from "@/views/DashboardView";
@@ -19,12 +20,37 @@ import { HandoverView } from "@/views/HandoverView";
 import { ReviewView } from "@/views/ReviewView";
 import { TeamView } from "@/views/TeamView";
 import { SettingsView } from "@/views/SettingsView";
+import { LandingPageView } from "@/views/LandingPageView";
 
 export default function Home() {
+  const [showLanding, setShowLanding] = useState(true);
   const [activeTab, setActiveTab] = useState<NavTab>("dashboard");
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
-  const { user, isLoading, currentProject, setCurrentProject, refreshProjects } = useAuth();
+  const { user, isLoading, currentProject, setCurrentProject, refreshProjects, switchDemoRole } = useAuth();
+  const { toast } = useToast();
+
+  const handleOpenUpload = () => {
+    if (!currentProject) {
+      toast.warning("Please select or initialize a project first before ingesting sources.");
+      setShowNewProjectModal(true);
+      return;
+    }
+    setShowUploadModal(true);
+  };
+
+  // 1. Landing Page View (with interactive 3D Knowledge Network)
+  if (showLanding) {
+    return (
+      <LandingPageView
+        onEnterApp={() => setShowLanding(false)}
+        onSelectRole={async (role) => {
+          await switchDemoRole(role);
+          setShowLanding(false);
+        }}
+      />
+    );
+  }
 
   // Authentication Loading State
   if (isLoading) {
@@ -52,22 +78,23 @@ export default function Home() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onNewProject={() => setShowNewProjectModal(true)}
+        onViewLanding={() => setShowLanding(true)}
       />
 
       {/* 2. Main Workspace */}
       <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
         <TopNav
           onNewProject={() => setShowNewProjectModal(true)}
-          onUpload={() => setShowUploadModal(true)}
+          onUpload={handleOpenUpload}
         />
 
         {/* View Container */}
         <main className="flex-1 overflow-y-auto p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto">
+          <div key={activeTab} className="max-w-7xl mx-auto transition-all duration-300 animate-in fade-in slide-in-from-bottom-2">
             {activeTab === "dashboard" && (
               <DashboardView
                 onNavigate={(tab) => setActiveTab(tab)}
-                onUpload={() => setShowUploadModal(true)}
+                onUpload={handleOpenUpload}
               />
             )}
 
@@ -82,7 +109,7 @@ export default function Home() {
             )}
 
             {activeTab === "sources" && (
-              <SourcesView onUpload={() => setShowUploadModal(true)} />
+              <SourcesView onUpload={handleOpenUpload} />
             )}
 
             {activeTab === "knowledge" && <KnowledgeView />}
@@ -109,6 +136,7 @@ export default function Home() {
           onClose={() => setShowUploadModal(false)}
           onSuccess={() => {
             refreshProjects();
+            toast.success("Source files ingested and parsed into page chunks successfully!");
           }}
         />
       )}
@@ -121,6 +149,7 @@ export default function Home() {
             await refreshProjects();
             setCurrentProject(newProj);
             setShowNewProjectModal(false);
+            toast.success(`Project '${newProj.name}' initialized and set as active.`);
           }}
         />
       )}

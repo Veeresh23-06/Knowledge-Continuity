@@ -21,6 +21,7 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { Project } from "@/lib/types";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/Toast";
 
 interface ProjectsViewProps {
   onNewProject: () => void;
@@ -29,6 +30,7 @@ interface ProjectsViewProps {
 
 export function ProjectsView({ onNewProject, onSelectProject }: ProjectsViewProps) {
   const { projects, currentProject, setCurrentProject, user, refreshProjects } = useAuth();
+  const { toast } = useToast();
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
@@ -73,10 +75,9 @@ export function ProjectsView({ onNewProject, onSelectProject }: ProjectsViewProp
       });
       await refreshProjects();
       setEditingProject(null);
-      setFeedbackMsg({ type: "success", text: "Project updated successfully." });
-      setTimeout(() => setFeedbackMsg(null), 3000);
+      toast.success("Project settings updated successfully.");
     } catch (err: any) {
-      setFeedbackMsg({ type: "error", text: err.message || "Failed to update project." });
+      toast.error(err.message || "Failed to update project.");
     } finally {
       setActionLoading(false);
     }
@@ -87,10 +88,9 @@ export function ProjectsView({ onNewProject, onSelectProject }: ProjectsViewProp
     try {
       await api.archiveProject(projectId);
       await refreshProjects();
-      setFeedbackMsg({ type: "success", text: "Project archived successfully." });
-      setTimeout(() => setFeedbackMsg(null), 3000);
+      toast.info("Project workspace archived.");
     } catch (err: any) {
-      setFeedbackMsg({ type: "error", text: err.message || "Failed to archive project." });
+      toast.error(err.message || "Failed to archive project.");
     } finally {
       setActionLoading(false);
     }
@@ -102,10 +102,9 @@ export function ProjectsView({ onNewProject, onSelectProject }: ProjectsViewProp
       await api.deleteProject(projectId);
       await refreshProjects();
       setDeletingProjectId(null);
-      setFeedbackMsg({ type: "success", text: "Project deleted successfully." });
-      setTimeout(() => setFeedbackMsg(null), 3000);
+      toast.info("Project workspace deleted.");
     } catch (err: any) {
-      setFeedbackMsg({ type: "error", text: err.message || "Failed to delete project." });
+      toast.error(err.message || "Failed to delete project.");
     } finally {
       setActionLoading(false);
     }

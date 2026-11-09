@@ -8,8 +8,7 @@ from backend.app.models import (
 )
 from backend.app.auth import get_password_hash
 from backend.app.config import settings
-from backend.app.services.document_parser import compute_file_hash, process_document
-from backend.app.services.extraction_service import extract_project_knowledge
+from backend.app.services.document_pipeline import process_single_document
 from backend.app.services.verification_service import run_project_verification
 from backend.app.services.handover_service import generate_handover_report
 
@@ -95,68 +94,14 @@ def seed():
         with open(src_path, "rb") as f_in:
             content = f_in.read()
 
-        dest_path = os.path.join(project_dir, fname)
-        with open(dest_path, "wb") as f_out:
-            f_out.write(content)
-
-        page_count, chunks = process_document(dest_path, ftype)
-        f_hash = compute_file_hash(content)
-
-        doc = Document(
+        doc = process_single_document(
+            file_bytes=content,
+            original_filename=fname,
             project_id=apollo.id,
-            filename=fname,
-            file_path=dest_path,
-            file_size=len(content),
-            file_type=ftype,
-            file_hash=f_hash,
-            page_count=page_count,
-            status="COMPLETED",
-            uploaded_by=users["outgoing@knowledgecontinuity.io"].id
+            user_id=users["outgoing@knowledgecontinuity.io"].id,
+            db=db
         )
-        db.add(doc)
-        db.commit()
-        db.refresh(doc)
-
-        print(f"Ingested {fname} ({page_count} pages, {len(chunks)} chunks)")
-
-        # Store chunks and extract
-        for c in chunks:
-            chunk = DocumentChunk(
-                document_id=doc.id,
-                project_id=apollo.id,
-                page_number=c["page_number"],
-                chunk_index=c["chunk_index"],
-                text_content=c["text_content"],
-                char_start=c["char_start"],
-                char_end=c["char_end"]
-            )
-            db.add(chunk)
-
-            # Extract entities
-            findings = extract_project_knowledge(
-                chunk_text=c["text_content"],
-                page_number=c["page_number"],
-                filename=fname
-            )
-
-            for f_dict in findings:
-                finding = ExtractedFinding(
-                    project_id=apollo.id,
-                    document_id=doc.id,
-                    entity_type=f_dict["entity_type"],
-                    title=f_dict["title"],
-                    description=f_dict["description"],
-                    owner=f_dict["owner"],
-                    deadline=f_dict["deadline"],
-                    status=FindingStatus.DRAFT,
-                    page_number=f_dict["page_number"],
-                    supporting_quotation=f_dict["supporting_quotation"],
-                    confidence_score=f_dict["confidence_score"],
-                    is_recommendation=f_dict["is_recommendation"]
-                )
-                db.add(finding)
-
-        db.commit()
+        print(f"Ingested {fname} ({doc.page_count} pages, {doc.chunk_count} chunks)")
 
     print("--- Running Evidence Verification & Conflict Detection ---")
     run_project_verification(apollo.id, db)

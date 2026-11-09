@@ -38,6 +38,7 @@ import {
   History,
   FileCheck,
   Check,
+  X,
 } from "lucide-react";
 import {
   ExtractedFinding,
@@ -64,9 +65,11 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { EvidenceModal } from "@/components/EvidenceModal";
 import { ReviewModal } from "@/components/ReviewModal";
+import { useToast } from "@/components/Toast";
 
 export function KnowledgeView() {
   const { currentProject, user } = useAuth();
+  const { toast } = useToast();
 
   // Tab navigation
   const [activeTab, setActiveTab] = useState<
@@ -180,8 +183,9 @@ export function KnowledgeView() {
       const updated = await api.reconstructProject(currentProject.id, true);
       setProjectState(updated);
       await loadAllReconstructedData();
-    } catch (err) {
-      console.error("Reconstruction failed:", err);
+      toast.success("Project state reconstructed successfully!");
+    } catch (err: any) {
+      toast.error(err.message || "Reconstruction failed.");
     } finally {
       setReconstructing(false);
     }
@@ -194,8 +198,9 @@ export function KnowledgeView() {
       const job = await api.triggerExtraction(currentProject.id, true);
       setLatestJob(job);
       await handleReconstruct();
-    } catch (err) {
-      console.error("Extraction trigger failed:", err);
+      toast.success("AI knowledge extraction triggered and synchronized!");
+    } catch (err: any) {
+      toast.error(err.message || "Extraction trigger failed.");
     } finally {
       setExtracting(false);
     }
@@ -207,6 +212,9 @@ export function KnowledgeView() {
     try {
       await api.reVerifyProject(currentProject.id);
       await handleReconstruct();
+      toast.success("Evidence re-verification & conflict detection completed!");
+    } catch (err: any) {
+      toast.error(err.message || "Re-verification failed.");
     } finally {
       setIsReverifying(false);
     }
@@ -218,8 +226,9 @@ export function KnowledgeView() {
     try {
       await api.reviewConflict(conflictId);
       await loadAllReconstructedData();
-    } catch (e) {
-      console.error("Failed to start review:", e);
+      toast.info("Conflict marked as UNDER_REVIEW.");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to start review.");
     } finally {
       setActionLoading(false);
     }
@@ -233,8 +242,9 @@ export function KnowledgeView() {
       setResolvingConflict(null);
       setResolutionNotes("");
       await loadAllReconstructedData();
-    } catch (e) {
-      console.error("Failed to resolve conflict:", e);
+      toast.success("Conflict resolved with audit notes.");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to resolve conflict.");
     } finally {
       setActionLoading(false);
     }
@@ -248,8 +258,9 @@ export function KnowledgeView() {
       setDismissingConflict(null);
       setDismissalNotes("");
       await loadAllReconstructedData();
-    } catch (e) {
-      console.error("Failed to dismiss conflict:", e);
+      toast.info("Conflict dismissed with justification note.");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to dismiss conflict.");
     } finally {
       setActionLoading(false);
     }
@@ -291,6 +302,18 @@ export function KnowledgeView() {
     setSearchResults(null);
   }
 
+  if (!currentProject) {
+    return (
+      <div className="bg-white rounded-xl border border-dashed border-slate-200 p-12 text-center space-y-3 my-8 animate-in fade-in duration-300">
+        <BrainCircuit className="w-10 h-10 text-slate-300 mx-auto" />
+        <h3 className="text-base font-bold text-slate-800">No Project Selected</h3>
+        <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          Please select a workspace from the left sidebar to inspect extracted knowledge findings, decisions, and tasks.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* 1. Header Bar with Actions & Freshness Status */}
@@ -303,7 +326,7 @@ export function KnowledgeView() {
 
               {projectState && (
                 <span
-                  className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
+                  className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md border ${
                     projectState.freshness_status === "UP_TO_DATE"
                       ? "bg-emerald-50 text-emerald-800 border-emerald-300"
                       : "bg-amber-50 text-amber-800 border-amber-300"
@@ -475,7 +498,7 @@ export function KnowledgeView() {
             activeTab === "RESPONSIBILITIES" ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:bg-slate-100"
           }`}
         >
-          <Users className="w-3.5 h-3.5 text-purple-500" />
+          <Users className="w-3.5 h-3.5 text-slate-600" />
           Ownership & Team ({responsibilities ? responsibilities.owners.length : 0})
         </button>
 
@@ -925,7 +948,7 @@ export function KnowledgeView() {
         <div className="space-y-6">
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs">
             <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Users className="w-4 h-4 text-purple-600" />
+              <Users className="w-4 h-4 text-slate-700" />
               Team Workload & Accountability Matrix
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -1078,18 +1101,18 @@ export function KnowledgeView() {
           {/* AI Recommendations */}
           {riskRegister.ai_recommendations.length > 0 && (
             <div className="space-y-3 pt-4 border-t border-slate-200">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-purple-600 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" />
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-teal-600" />
                 AI-Generated Recommendations ({riskRegister.ai_recommendations.length})
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {riskRegister.ai_recommendations.map((r) => (
-                  <div key={r.id} className="bg-purple-50/40 rounded-xl border border-purple-200 p-5 shadow-2xs space-y-2 text-xs">
-                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-purple-100 text-purple-800">
+                  <div key={r.id} className="bg-slate-50 rounded-xl border border-slate-200 p-5 shadow-2xs space-y-2 text-xs">
+                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-200 text-slate-800">
                       Recommendation
                     </span>
-                    <h4 className="font-bold text-purple-950">{r.title}</h4>
-                    <p className="text-purple-900">{r.description}</p>
+                    <h4 className="font-bold text-slate-900">{r.title}</h4>
+                    <p className="text-slate-600">{r.description}</p>
                   </div>
                 ))}
               </div>
@@ -1194,7 +1217,7 @@ export function KnowledgeView() {
                       : cStatus === "DISMISSED"
                       ? "bg-slate-100 text-slate-700 border-slate-300"
                       : cStatus === "UNDER_REVIEW"
-                      ? "bg-purple-100 text-purple-800 border-purple-300"
+                      ? "bg-cyan-100 text-cyan-800 border-cyan-300"
                       : "bg-amber-100 text-amber-800 border-amber-300";
 
                   return (
@@ -1226,7 +1249,7 @@ export function KnowledgeView() {
                             <button
                               onClick={() => handleStartReview(c.id)}
                               disabled={actionLoading}
-                              className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 transition disabled:opacity-50"
+                              className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-cyan-50 text-cyan-700 hover:bg-cyan-100 border border-cyan-200 transition disabled:opacity-50"
                             >
                               Start Review
                             </button>
@@ -1472,11 +1495,11 @@ export function KnowledgeView() {
                         </td>
                         <td className="py-2.5 px-4">
                           {doc.coverage_pct >= 90 ? (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800">
                               Reliable
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800">
                               Review Needed
                             </span>
                           )}
@@ -1546,7 +1569,7 @@ export function KnowledgeView() {
                   <option value="CLAIM_B_SUPPORTED">Claim B Supported (Claim B is verified truth; supersede Claim A)</option>
                   <option value="BOTH_VALID_DIFFERENT_CONTEXT">Both Valid in Different Contexts (Retain both with contextual note)</option>
                   <option value="NEITHER_SUPPORTED">Neither Supported (Reject both claims as unverified)</option>
-                  <option value="INVESTIGATION_REQUIRED">Investigation Required (Disputed — flag for further team enquiry)</option>
+                  <option value="INVESTIGATION_REQUIRED">Investigation Required (Disputed: flag for further team enquiry)</option>
                 </select>
               </div>
 

@@ -532,41 +532,66 @@ def get_risks_and_dependencies_legacy(
         "risks": [
             {
                 "id": f.id,
+                "entity_type": "RISK",
                 "title": f.title,
                 "description": f.description,
                 "severity": f.priority or "MEDIUM",
                 "status": f.status,
+                "verification_status": f.verification_status,
                 "page": f.page_number,
-                "quotation": f.supporting_quotation
+                "page_number": f.page_number,
+                "quotation": f.supporting_quotation,
+                "supporting_quotation": f.supporting_quotation,
+                "mitigation": f.mitigation or (f.flags or {}).get("mitigation") or "Review architecture parameters and monitor scaling triggers during onboarding.",
+                "flags": f.flags or {}
             } for f in findings if f.entity_type == "RISK"
         ],
         "blockers": [
             {
                 "id": f.id,
+                "entity_type": "BLOCKER",
                 "title": f.title,
                 "description": f.description,
                 "owner": f.owner or "Requires Escalation",
                 "status": f.status,
+                "verification_status": f.verification_status,
                 "page": f.page_number,
+                "page_number": f.page_number,
+                "quotation": f.supporting_quotation,
+                "supporting_quotation": f.supporting_quotation,
                 "flags": f.flags or {}
             } for f in findings if f.entity_type == "BLOCKER"
         ],
         "dependencies": [
             {
                 "id": f.id,
+                "entity_type": "DEPENDENCY",
                 "title": f.title,
                 "description": f.description,
+                "owner": f.owner,
                 "status": f.status,
-                "page": f.page_number
+                "verification_status": f.verification_status,
+                "page": f.page_number,
+                "page_number": f.page_number,
+                "quotation": f.supporting_quotation,
+                "supporting_quotation": f.supporting_quotation,
+                "flags": f.flags or {}
             } for f in findings if f.entity_type == "DEPENDENCY"
         ],
         "questions": [
             {
                 "id": f.id,
+                "entity_type": "QUESTION",
                 "title": f.title,
                 "description": f.description,
+                "owner": f.owner,
                 "status": f.status,
-                "page": f.page_number
+                "verification_status": f.verification_status,
+                "page": f.page_number,
+                "page_number": f.page_number,
+                "quotation": f.supporting_quotation,
+                "supporting_quotation": f.supporting_quotation,
+                "flags": f.flags or {}
             } for f in findings if f.entity_type == "QUESTION"
         ]
     }

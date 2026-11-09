@@ -10,15 +10,18 @@ import {
   FileText,
   User,
   Filter,
+  Eye,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { EvidenceModal } from "@/components/EvidenceModal";
 
 export function TimelineView() {
   const { currentProject } = useAuth();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<string>("ALL");
+  const [inspectFinding, setInspectFinding] = useState<any | null>(null);
 
   useEffect(() => {
     async function loadTimeline() {
@@ -40,6 +43,18 @@ export function TimelineView() {
     if (filterType === "ALL") return true;
     return item.entity_type === filterType;
   });
+
+  if (!currentProject) {
+    return (
+      <div className="bg-white rounded-xl border border-dashed border-slate-200 p-12 text-center space-y-3 my-8 animate-in fade-in duration-300">
+        <Milestone className="w-10 h-10 text-slate-300 mx-auto" />
+        <h3 className="text-base font-bold text-slate-800">No Project Selected</h3>
+        <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          Please select a workspace from the left sidebar to inspect chronological decision milestones.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -125,22 +140,45 @@ export function TimelineView() {
                   <h3 className="text-sm font-bold text-slate-900">{item.title}</h3>
                   <p className="text-xs text-slate-600 leading-relaxed">{item.description}</p>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-500">
+                  <div className="flex flex-wrap items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-500 gap-2">
                     <div className="flex items-center gap-1">
                       <User className="w-3.5 h-3.5 text-slate-400" />
                       <span>Owner: <strong className="text-slate-700">{item.owner || "Team / Stated in Source"}</strong></span>
                     </div>
 
-                    <span className="text-[11px] font-medium text-emerald-600 flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Status: {item.status}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setInspectFinding(item)}
+                        className="flex items-center gap-1 px-2.5 py-1 bg-teal-50 hover:bg-teal-100 text-teal-800 text-[11px] font-semibold rounded-md border border-teal-200 transition cursor-pointer"
+                      >
+                        <Eye className="w-3 h-3 text-teal-600" />
+                        Inspect Evidence
+                      </button>
+
+                      <span className="text-[11px] font-medium text-emerald-600 flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Status: {item.status}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
+      )}
+
+      {/* Evidence Inspector Modal */}
+      {inspectFinding && (
+        <EvidenceModal
+          finding={inspectFinding}
+          onClose={() => setInspectFinding(null)}
+          onRefresh={() => {
+            if (currentProject) {
+              api.getTimeline(currentProject.id).then(setItems);
+            }
+          }}
+        />
       )}
     </div>
   );

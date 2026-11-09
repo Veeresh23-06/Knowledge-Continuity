@@ -18,9 +18,11 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { ReviewModal } from "@/components/ReviewModal";
 import { EvidenceModal } from "@/components/EvidenceModal";
+import { useToast } from "@/components/Toast";
 
 export function ReviewView() {
   const { currentProject, user } = useAuth();
+  const { toast } = useToast();
   const [queue, setQueue] = useState<ExtractedFinding[]>([]);
   const [history, setHistory] = useState<ReviewLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,8 +54,25 @@ export function ReviewView() {
 
   async function handleReviewSubmit(findingId: string, reviewData: any) {
     if (!currentProject) return;
-    await api.submitReview(currentProject.id, findingId, reviewData);
-    await loadReviewData();
+    try {
+      await api.submitReview(currentProject.id, findingId, reviewData);
+      toast.success(`Action '${reviewData.action}' recorded in audit log.`);
+      await loadReviewData();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to submit review action.");
+    }
+  }
+
+  if (!currentProject) {
+    return (
+      <div className="bg-white rounded-xl border border-dashed border-slate-200 p-12 text-center space-y-3 my-8 animate-in fade-in duration-300">
+        <CheckSquare className="w-10 h-10 text-slate-300 mx-auto" />
+        <h3 className="text-base font-bold text-slate-800">No Project Selected</h3>
+        <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          Please select a workspace from the left sidebar to audit and approve extracted findings.
+        </p>
+      </div>
+    );
   }
 
   if (!canReview) {
@@ -136,7 +155,7 @@ export function ReviewView() {
                       </span>
                       <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
                         finding.status === "FLAGGED" ? "bg-amber-100 text-amber-800" :
-                        finding.status === "UNDER_INVESTIGATION" ? "bg-purple-100 text-purple-800" :
+                        finding.status === "UNDER_INVESTIGATION" ? "bg-blue-100 text-blue-800" :
                         "bg-slate-100 text-slate-700"
                       }`}>
                         {finding.status}

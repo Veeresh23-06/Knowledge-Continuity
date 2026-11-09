@@ -1,12 +1,12 @@
-from typing import List
+from typing import List, Optional
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status, Query
 from sqlalchemy.orm import Session
 
 from backend.app.database import get_db
 from backend.app.models import Handover, Project, User, UserRole, HandoverStatus, AuditLog
 from backend.app.schemas import HandoverCreate, HandoverResponse
-from backend.app.auth import get_current_user, check_project_access
+from backend.app.auth import get_current_user, get_current_user_from_header_or_param, check_project_access
 from backend.app.services.handover_service import generate_handover_report
 from backend.app.services.pdf_generator import generate_handover_pdf
 
@@ -143,8 +143,9 @@ def approve_handover(
 def export_pdf(
     project_id: str,
     handover_id: str,
+    token: Optional[str] = Query(None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_header_or_param)
 ):
     membership = check_project_access(project_id, current_user, db)
     handover = db.query(Handover).filter(Handover.id == handover_id, Handover.project_id == project_id).first()
