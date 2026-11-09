@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   BrainCircuit,
@@ -23,8 +23,14 @@ import {
   ArrowDown,
   Check,
   X,
-  Scale,
-  Shield,
+  ChevronDown,
+  ChevronUp,
+  Cpu,
+  Database,
+  Terminal,
+  Activity,
+  Award,
+  Sparkles,
 } from "lucide-react";
 import { ThreeCanvas } from "@/components/ThreeCanvas";
 import { UserRole } from "@/lib/types";
@@ -35,759 +41,836 @@ interface LandingPageViewProps {
 }
 
 export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewProps) {
-  const [activeStage, setActiveStage] = useState(0);
-  const [activeSection, setActiveSection] = useState(0);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [isLoggingIn, setIsLoggingIn] = useState<string | null>(null);
-  const [visibleSections, setVisibleSections] = useState<Record<string, boolean>>({
-    hero: true,
-  });
 
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const sectionIds = [
-    { id: "hero", label: "Overview" },
-    { id: "pipeline", label: "5-Stage Pipeline" },
-    { id: "entities", label: "10 Entity Engine" },
-    { id: "evidence", label: "Evidence Engine" },
-    { id: "demo-roles", label: "Demo Accounts" },
-    { id: "dossier", label: "13-Section Package" },
-  ];
-
-  // IntersectionObserver to slowly fade in sections as they appear
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const sections = container.querySelectorAll("section[data-section-id]");
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const id = entry.target.getAttribute("data-section-id");
-          if (id && entry.isIntersecting) {
-            setVisibleSections((prev) => ({ ...prev, [id]: true }));
-          }
-        });
-      },
-      {
-        root: container,
-        threshold: 0.15,
-      }
-    );
-
-    sections.forEach((sec) => observer.observe(sec));
-    return () => observer.disconnect();
-  }, []);
-
-  // Track active section on scroll
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      const scrollPos = container.scrollTop;
-      const height = container.clientHeight;
-      const index = Math.round(scrollPos / height);
-      if (index >= 0 && index < sectionIds.length && index !== activeSection) {
-        setActiveSection(index);
-      }
-    };
-
-    container.addEventListener("scroll", handleScroll, { passive: true });
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [activeSection, sectionIds.length]);
-
-  // Keyboard navigation for section switching
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowDown" || e.key === "PageDown") {
-        e.preventDefault();
-        scrollToSection(Math.min(sectionIds.length - 1, activeSection + 1));
-      } else if (e.key === "ArrowUp" || e.key === "PageUp") {
-        e.preventDefault();
-        scrollToSection(Math.max(0, activeSection - 1));
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activeSection, sectionIds.length]);
-
-  const scrollToSection = (index: number) => {
-    const container = containerRef.current;
-    if (!container) return;
-    const target = container.children[index] as HTMLElement;
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth" });
-      setActiveSection(index);
-    }
-  };
-
-  const stages = [
-    {
-      num: "01",
-      title: "CONNECT & INGEST",
-      subtitle: "Multi-Format Source Ingestion",
-      desc: "Ingests authorized architecture specifications (PDF), handover notes (DOCX), and sprint retrospectives (TXT). Automatically validates MIME signatures, verifies file size constraints, performs SHA-256 deduplication, and indexes text into character-precise page chunks.",
-      icon: UploadCloud,
-      detail: "Preserves page provenance, chunk index, and character offsets for reverse-traceability.",
-    },
-    {
-      num: "02",
-      title: "EXTRACT & RECONSTRUCT",
-      subtitle: "Deterministic & LLM Extraction",
-      desc: "Extracts 10 structured entity types: Decisions, Tasks, Deadlines, Risks, Blockers, Dependencies, Questions, and Responsibilities. Reconstructs chronological decision timelines, task schedules, and inter-service coupling graphs.",
-      icon: BrainCircuit,
-      detail: "Zero-Hallucination policy: unstated owners or deadlines are strictly tagged as null.",
-    },
-    {
-      num: "03",
-      title: "EVIDENCE VERIFICATION",
-      subtitle: "SequenceMatcher Citation Grounding",
-      desc: "Every finding is audited against source chunk text using string alignment and SequenceMatcher token overlap. Automatically detects cross-document contradictions and flags ambiguous ownership.",
-      icon: ShieldCheck,
-      detail: "Flags contradictory deadlines, ungrounded claims, and ambiguous ownership for human review.",
-    },
-    {
-      num: "04",
-      title: "HUMAN REVIEW WORKSPACE",
-      subtitle: "Managerial Audit & Correction",
-      desc: "Project Managers inspect the review queue to correct titles, reassign owners, adjust deadlines, and sign off. Every edit, approval, or investigation flag is preserved in immutable audit logs.",
-      icon: CheckSquare,
-      detail: "Incoming members cannot view unapproved drafts: backend returns 403 Forbidden.",
-    },
-    {
-      num: "05",
-      title: "HANDOVER SYNTHESIS & EXPORT",
-      subtitle: "13-Section Dossier & ReportLab PDF",
-      desc: "Compiles verified findings into an official 13-section onboarding package tailored to the recipient's domain. Complete with executive status, ADR register, risk matrix, Day-1 / Week-1 action plans, and ReportLab PDF export.",
-      icon: FileCheck2,
-      detail: "Single-click downloadable enterprise PDF report with audit verification stamps.",
-    },
-  ];
-
-  const entities = [
-    { id: "DECISION", label: "Decisions", desc: "Architectural choices, rationale, and tech stack selections.", icon: GitFork, spec: "ADR Schema" },
-    { id: "TASK", label: "Tasks", desc: "Concrete engineering items with state and ownership.", icon: CheckSquare, spec: "Sprint Tracked" },
-    { id: "DEADLINE", label: "Deadlines", desc: "Milestone targets, delivery dates, and SLA cutoffs.", icon: Milestone, spec: "ISO-8601 Validated" },
-    { id: "RISK", label: "Risks", desc: "Technical debt, single points of failure, scaling bottlenecks.", icon: ShieldAlert, spec: "Severity Matrix" },
-    { id: "BLOCKER", label: "Blockers", desc: "Active impediments requiring immediate escalation.", icon: AlertTriangle, spec: "Escalation Flag" },
-    { id: "DEPENDENCY", label: "Dependencies", desc: "Third-party APIs, vendor couplings, and upstream services.", icon: Layers, spec: "Coupling Graph" },
-    { id: "QUESTION", label: "Questions", desc: "Open RFCs, ambiguous requirements, and architectural inquiries.", icon: BrainCircuit, spec: "RFC Queue" },
-    { id: "RESPONSIBILITY", label: "Roles", desc: "Domain owners, maintainers, and escalation points.", icon: Users, spec: "Ownership Table" },
-  ];
-
-  async function handleDemoRoleClick(role: UserRole) {
-    setIsLoggingIn(role);
+  const handleRoleClick = async (role: UserRole, roleId: string) => {
+    setIsLoggingIn(roleId);
     try {
       await onSelectRole(role);
-      onEnterApp();
     } finally {
       setIsLoggingIn(null);
     }
-  }
+  };
+
+  const toggleFaq = (index: number) => {
+    setOpenFaq(openFaq === index ? null : index);
+  };
 
   return (
-    <div className="relative h-screen w-full bg-slate-950 text-slate-100 selection:bg-teal-500 selection:text-white overflow-hidden font-sans">
-      {/* 3D Interactive Connected Knowledge Network */}
+    <div className="min-h-screen bg-[#020202] text-white selection:bg-teal-500/30 selection:text-teal-200 font-sans relative overflow-x-hidden">
+      {/* 3D Knowledge Network & Isometric Cube Background */}
       <ThreeCanvas />
 
-      {/* Subtle Ambient Depth */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-teal-500/5 rounded-2xl blur-[140px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-slate-800/20 rounded-2xl blur-[160px]" />
-      </div>
+      {/* Subtle Halftone Grid Pattern Overlay */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0 opacity-25"
+        style={{
+          backgroundImage:
+            "radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+        }}
+        aria-hidden="true"
+      />
 
-      {/* Fixed Navigation Bar */}
-      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-slate-950/85 border-b border-slate-800 transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => scrollToSection(0)}>
-            <div className="w-8 h-8 rounded-md bg-teal-600 flex items-center justify-center text-white font-bold text-xs shadow-sm">
-              KC
+      {/* Floating Glassmorphism Header (Quantum Navigation Style) */}
+      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-[#020202]/85 border-b border-white/10 px-4 sm:px-8 py-3.5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 shadow-sm">
+            <BrainCircuit className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-sm font-black tracking-wider text-white font-mono">
+              KNOWLEDGE CONTINUITY
+            </span>
+            <span className="hidden sm:inline-block ml-2 text-[10px] font-mono text-teal-400/90 tracking-widest uppercase">
+              // VERIFIED HANDOVER
+            </span>
+          </div>
+        </div>
+
+        {/* Center Nav Links */}
+        <nav className="hidden lg:flex items-center gap-8 text-xs font-mono tracking-wider text-neutral-400">
+          <a href="#services" className="hover:text-white transition">
+            SERVICES
+          </a>
+          <a href="#case-studies" className="hover:text-white transition">
+            CASE STUDIES
+          </a>
+          <a href="#tech-stack" className="hover:text-white transition">
+            TECH STACK
+          </a>
+          <a href="#metrics" className="hover:text-white transition">
+            METRICS
+          </a>
+          <a href="#roles" className="hover:text-white transition">
+            DEMO ROLES
+          </a>
+          <a href="#faq" className="hover:text-white transition">
+            FAQ
+          </a>
+        </nav>
+
+        {/* Right CTA */}
+        <div className="flex items-center gap-3">
+          <a
+            href="http://127.0.0.1:8000/docs"
+            target="_blank"
+            rel="noreferrer"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono text-neutral-400 hover:text-white border border-white/10 hover:border-white/20 rounded-lg transition"
+          >
+            <Terminal className="w-3.5 h-3.5" />
+            <span>API Docs</span>
+          </a>
+          <button
+            onClick={onEnterApp}
+            className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-neutral-200 text-black text-xs font-bold rounded-lg transition cursor-pointer shadow-sm active:scale-95"
+          >
+            <span>Enter Console</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </header>
+
+      {/* Main Container */}
+      <main className="relative z-10 pt-28 pb-20">
+        {/* ========================================================================= */}
+        {/* HERO SECTION                                                             */}
+        {/* ========================================================================= */}
+        <section className="relative px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto pt-12 pb-24 text-center">
+          {/* Top Pill Announcement */}
+          <div className="inline-flex items-center gap-2.5 px-3.5 py-1 rounded-md bg-white/[0.04] border border-white/10 text-xs font-mono text-neutral-300 mb-8 backdrop-blur-sm">
+            <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+            <span>We help automate your engineering handover processes</span>
+          </div>
+
+          {/* Giant Title (Quantum Agency Visual Style) */}
+          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight text-white uppercase font-sans mb-6">
+            KNOWLEDGE <br className="hidden sm:inline" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white via-neutral-200 to-neutral-500">
+              CONTINUITY
+            </span>
+          </h1>
+
+          {/* Subtitle */}
+          <p className="max-w-3xl mx-auto text-base sm:text-lg md:text-xl text-neutral-400 font-light leading-relaxed mb-10">
+            Trusted evidence-linked platform. We leverage Multimodal LLMs, Exact
+            Coordinate Extraction, and Cryptographic Audit Trails to maximize your
+            engineering data’s potential. Extract verified models, optimize
+            operations, and unlock unparalleled continuity with our end-to-end
+            handover services.
+          </p>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={onEnterApp}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 bg-white hover:bg-neutral-200 text-black text-sm font-bold rounded-lg transition cursor-pointer shadow-md active:scale-95"
+            >
+              <span>Launch Knowledge Console</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <a
+              href="#case-studies"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 bg-neutral-900/90 hover:bg-neutral-800 text-white text-sm font-semibold rounded-lg border border-white/15 transition cursor-pointer backdrop-blur-sm"
+            >
+              <span>Explore Case Studies</span>
+              <ArrowDown className="w-4 h-4 text-neutral-400" />
+            </a>
+          </div>
+
+          {/* 3D Spatial Indicator / Rays Accent */}
+          <div className="mt-16 pt-8 border-t border-white/10 flex flex-wrap items-center justify-center gap-6 sm:gap-12 text-xs font-mono text-neutral-500">
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
+              <span>ISOMETRIC 3D NETWORK ACTIVE</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
+              <span>SUB-MILLIMETER COORDINATE EXTRACTION</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span>SHA-256 AUDIT TRAILS</span>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* PARTNER & ARCHITECTURE STANDARDS MARQUEE                                */}
+        {/* ========================================================================= */}
+        <section className="border-y border-white/10 bg-[#050505]/80 py-8 px-4 sm:px-6">
+          <div className="max-w-6xl mx-auto">
+            <p className="text-center text-xs font-mono uppercase tracking-widest text-neutral-500 mb-6">
+              ENGINEERED FOR ENTERPRISE ARCHITECTURE &amp; REGULATED SYSTEMS
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 text-center">
+              {[
+                { name: "Next.js 15", sub: "Turbopack Engine" },
+                { name: "FastAPI", sub: "Async Python 3.13" },
+                { name: "Google Gemini", sub: "Multimodal AI" },
+                { name: "PyMuPDF", sub: "Coordinate Parser" },
+                { name: "ReportLab", sub: "Dossier Publisher" },
+                { name: "SHA-256", sub: "Cryptographic Hash" },
+              ].map((tech, idx) => (
+                <div
+                  key={idx}
+                  className="p-3 rounded-lg bg-neutral-900/50 border border-white/5 flex flex-col items-center justify-center"
+                >
+                  <span className="text-sm font-bold text-neutral-200">
+                    {tech.name}
+                  </span>
+                  <span className="text-[10px] font-mono text-neutral-500">
+                    {tech.sub}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* OUR SERVICES / WHAT WE OFFER                                             */}
+        {/* ========================================================================= */}
+        <section
+          id="services"
+          className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b border-white/10"
+        >
+          <div className="mb-14">
+            <span className="text-xs font-mono uppercase tracking-widest text-teal-400">
+              OUR SERVICES
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black text-white mt-2 tracking-tight">
+              What we offer
+            </h2>
+            <p className="text-neutral-400 max-w-2xl mt-3 text-sm sm:text-base leading-relaxed">
+              Transform unorganized documentation, pull requests, and architecture
+              specs into verified knowledge assets that continuously improve with
+              engineer review.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[
+              {
+                num: "01",
+                title: "Evidence-Linked Extraction",
+                desc: "Sub-millimeter document coordinate mapping and verbatim quotation anchoring so every technical claim is traceable directly to authorized source pages.",
+                highlight: "Zero hallucination guarantee via citation spans",
+                icon: FileCheck2,
+              },
+              {
+                num: "02",
+                title: "10-Entity Domain Parser",
+                desc: "Autonomous structured ingestion identifying Milestones, Deliverables, Architecture decisions, Blockers, Secrets, Dependencies, and Key Contacts.",
+                highlight: "Categorized schema with confidence scoring",
+                icon: Layers,
+              },
+              {
+                num: "03",
+                title: "Multi-Role RBAC Governance",
+                desc: "Strict separation of duties across 4 roles (Admin, Lead PM, Outgoing Lead, Incoming Engineer), enforcing read-only restrictions on incoming staff.",
+                highlight: "Role-scoped permissions & review gates",
+                icon: ShieldCheck,
+              },
+              {
+                num: "04",
+                title: "Cryptographic Handover Dossier",
+                desc: "Automated 13-section immutable PDF handover dossiers signed with SHA-256 hash trees, audit logs, and on-demand report generation.",
+                highlight: "Production-grade ReportLab PDF compilation",
+                icon: Download,
+              },
+            ].map((service) => {
+              const Icon = service.icon;
+              return (
+                <div
+                  key={service.num}
+                  className="group relative p-7 sm:p-8 rounded-xl bg-neutral-900/60 border border-white/10 hover:border-teal-500/40 transition duration-300 backdrop-blur-sm"
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="text-xs font-mono font-bold text-neutral-500 group-hover:text-teal-400 transition">
+                      {service.num}
+                    </span>
+                    <div className="w-10 h-10 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-center text-teal-400 group-hover:bg-teal-500/10 transition">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2.5">
+                    {service.title}
+                  </h3>
+                  <p className="text-neutral-400 text-sm leading-relaxed mb-6">
+                    {service.desc}
+                  </p>
+                  <div className="pt-4 border-t border-white/5 flex items-center gap-2 text-xs font-mono text-teal-400/90">
+                    <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
+                    <span>{service.highlight}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* CASE STUDIES / USE CASES                                                 */}
+        {/* ========================================================================= */}
+        <section
+          id="case-studies"
+          className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b border-white/10"
+        >
+          <div className="mb-14">
+            <span className="text-xs font-mono uppercase tracking-widest text-teal-400">
+              USE CASES
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black text-white mt-2 tracking-tight">
+              Case studies
+            </h2>
+            <p className="text-neutral-400 max-w-2xl mt-3 text-sm sm:text-base leading-relaxed">
+              What our platform delivered across real-world enterprise engineering sprints.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                num: "01",
+                badge: "ACTIVE SEED PROJECT",
+                title: "Project Apollo",
+                category: "Payments & Microservices",
+                stats: "54 Extracted Facts • 66% Readiness",
+                summary:
+                  "Core distributed event processing engine, analytical datastore migration, and payment gateway infrastructure.",
+                status: "Ready for Inspection",
+              },
+              {
+                num: "02",
+                badge: "STREAMING DATA",
+                title: "Event Broker Pipeline",
+                category: "Kafka & Flink Cluster",
+                stats: "38 Verified Decisions • 82% Readiness",
+                summary:
+                  "Real-time event streaming pipeline handover with verified schema evolution and zero message loss.",
+                status: "Production Verified",
+              },
+              {
+                num: "03",
+                badge: "COMPLIANCE & AUDIT",
+                title: "FinTech Ledger",
+                category: "SOC-2 / ISO Audit",
+                stats: "46 Audit Spans • 91% Readiness",
+                summary:
+                  "Strict evidence anchoring with cryptographic tamper-evident review logs for financial examiners.",
+                status: "Compliant & Signed",
+              },
+              {
+                num: "04",
+                badge: "CLOUD INFRASTRUCTURE",
+                title: "Kubernetes Migration",
+                category: "DevOps & IAM Runbooks",
+                stats: "29 Cloud Runbooks • 75% Readiness",
+                summary:
+                  "Automated IAM credential rotation, ingress topologies, and cluster failover procedures.",
+                status: "Handover Complete",
+              },
+            ].map((cs) => (
+              <div
+                key={cs.num}
+                className="p-6 rounded-xl bg-neutral-900/60 border border-white/10 hover:border-white/20 transition flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between text-xs font-mono mb-4">
+                    <span className="text-teal-400 font-bold">{cs.num}</span>
+                    <span className="text-[10px] text-neutral-400 px-2 py-0.5 rounded bg-white/[0.04] border border-white/10">
+                      {cs.badge}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-bold text-white mb-1">
+                    {cs.title}
+                  </h3>
+                  <div className="text-xs font-mono text-neutral-400 mb-3">
+                    {cs.category}
+                  </div>
+                  <p className="text-neutral-400 text-xs leading-relaxed mb-4">
+                    {cs.summary}
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-white/5">
+                  <div className="text-[11px] font-mono text-teal-400/90 mb-3">
+                    {cs.stats}
+                  </div>
+                  <button
+                    onClick={onEnterApp}
+                    className="w-full flex items-center justify-center gap-1.5 py-2 text-xs font-bold text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition cursor-pointer"
+                  >
+                    <span>View Workspace</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* TECH STACK / TECHNOLOGY WE USE                                            */}
+        {/* ========================================================================= */}
+        <section
+          id="tech-stack"
+          className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b border-white/10"
+        >
+          <div className="mb-14">
+            <span className="text-xs font-mono uppercase tracking-widest text-teal-400">
+              TECH STACK
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black text-white mt-2 tracking-tight">
+              Technology we use
+            </h2>
+            <p className="text-neutral-400 max-w-2xl mt-3 text-sm sm:text-base leading-relaxed">
+              We are transparent about the cutting-edge tools powering our top-tier
+              products and services.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                num: "01",
+                title: "Google Gemini",
+                desc: "We harness Google Gemini API with strict temperature 0.1 extraction prompts to extract structured JSON entities without hallucination.",
+                tag: "Multimodal LLM",
+                icon: Cpu,
+              },
+              {
+                num: "02",
+                title: "PyMuPDF Parser",
+                desc: "PyMuPDF (fitz) provides high-speed sub-millimeter bounding box text extraction, page geometry mapping, and table parsing.",
+                tag: "Coordinate Engine",
+                icon: FileText,
+              },
+              {
+                num: "03",
+                title: "FastAPI & SQLite",
+                desc: "Asynchronous Python 3.13 backend with SQLAlchemy ORM, Pydantic v2 schemas, and relational integrity guarantees.",
+                tag: "Async Backend",
+                icon: Database,
+              },
+              {
+                num: "04",
+                title: "ReportLab Engine",
+                desc: "Our custom dossier generator publishes verified 13-section PDF packages complete with SHA-256 cryptographic audit logs.",
+                tag: "PDF Publisher",
+                icon: Download,
+              },
+            ].map((t) => {
+              const Icon = t.icon;
+              return (
+                <div
+                  key={t.num}
+                  className="p-6 rounded-xl bg-neutral-900/60 border border-white/10 hover:border-teal-500/30 transition flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs font-mono font-bold text-neutral-500">
+                        {t.num}
+                      </span>
+                      <Icon className="w-5 h-5 text-teal-400" />
+                    </div>
+                    <h3 className="text-base font-bold text-white mb-2">
+                      {t.title}
+                    </h3>
+                    <p className="text-neutral-400 text-xs leading-relaxed mb-4">
+                      {t.desc}
+                    </p>
+                  </div>
+                  <div className="pt-3 border-t border-white/5">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-teal-400/80">
+                      // {t.tag}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* METRICS / 10X YOUR HANDOVER OUTPUT                                        */}
+        {/* ========================================================================= */}
+        <section
+          id="metrics"
+          className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b border-white/10"
+        >
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+              10x your Handover Output. Save Hours in Engineering Transitions.
+            </h2>
+            <p className="text-neutral-400 text-sm sm:text-base mt-4">
+              Real-world engineering impact measured across production sprint handovers.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                value: "94%",
+                label: "Reduction in Onboarding Latency",
+                sub: "Incoming engineers reach first commit in under 48 hours instead of weeks.",
+              },
+              {
+                value: "100%",
+                label: "Verbatim Evidence Traceability",
+                sub: "Every extracted requirement anchors directly to an approved document page.",
+              },
+              {
+                value: "< 2 hrs",
+                label: "Automated Dossier Generation",
+                sub: "Instant compilation of complete 13-section technical packages.",
+              },
+              {
+                value: "0",
+                label: "Undocumented Tribal Knowledge Loss",
+                sub: "Zero lost context when senior staff transition off critical codebases.",
+              },
+            ].map((m, i) => (
+              <div
+                key={i}
+                className="p-7 rounded-xl bg-neutral-900/60 border border-white/10 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="text-4xl sm:text-5xl font-black text-white mb-3 tracking-tight font-mono">
+                    {m.value}
+                  </div>
+                  <h3 className="text-sm font-bold text-neutral-200 mb-2">
+                    {m.label}
+                  </h3>
+                </div>
+                <p className="text-neutral-400 text-xs leading-relaxed mt-4 pt-4 border-t border-white/5">
+                  {m.sub}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* WHY CHOOSE US / WE DELIVER VERIFICATION THAT WORKS                       */}
+        {/* ========================================================================= */}
+        <section
+          id="why-us"
+          className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b border-white/10"
+        >
+          <div className="mb-14">
+            <span className="text-xs font-mono uppercase tracking-widest text-teal-400">
+              WHY CHOOSE US
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black text-white mt-2 tracking-tight">
+              We Deliver Verification That Works.
+            </h2>
+            <p className="text-neutral-400 max-w-2xl mt-3 text-sm sm:text-base leading-relaxed">
+              We combine cutting-edge multimodal AI with a pragmatic, human-in-the-loop
+              review workflow to ensure your handover documentation translates into
+              tangible uptime.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[
+              {
+                title: "Evidence Over Hallucinations",
+                desc: "Generic LLMs fabricate plausible details. Knowledge Continuity strictly prevents hallucinations by forcing citations to exact document coordinates.",
+                metric: "100% Citation Grounding",
+              },
+              {
+                title: "Scalable As Your Engineering Team",
+                desc: "Whether transitioning a single microservice or an enterprise-wide cloud migration, our multi-project workspace isolates data cleanly.",
+                metric: "Multi-Project Isolation",
+              },
+              {
+                title: "10x Faster Handover Velocity",
+                desc: "Eliminate dozens of disorganized sync meetings. Automated extraction and structured review cycles compress the handover timeline.",
+                metric: "Hours instead of Weeks",
+              },
+              {
+                title: "Enterprise Grade Audit Trails",
+                desc: "Tamper-evident verification logs and cryptographic SHA-256 signatures provide bulletproof proof of compliance for security audits.",
+                metric: "Cryptographic Tamper Proof",
+              },
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className="p-8 rounded-xl bg-neutral-900/60 border border-white/10 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="text-xs font-mono text-teal-400 mb-2">
+                    // 0{idx + 1} PRINCIPLE
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2.5">
+                    {item.title}
+                  </h3>
+                  <p className="text-neutral-400 text-sm leading-relaxed mb-6">
+                    {item.desc}
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-white/5 flex items-center justify-between text-xs font-mono">
+                  <span className="text-neutral-500">Benchmark:</span>
+                  <span className="text-teal-400 font-bold">{item.metric}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* ROLE-BASED CONSOLE ACCESS (DEMO ACCOUNTS)                                  */}
+        {/* ========================================================================= */}
+        <section
+          id="roles"
+          className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b border-white/10"
+        >
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <span className="text-xs font-mono uppercase tracking-widest text-teal-400">
+              ACCESS &amp; ROLES
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black text-white mt-2 tracking-tight">
+              Role-Based Governance Built In
+            </h2>
+            <p className="text-neutral-400 text-sm sm:text-base mt-3">
+              Experience the console through any of our 4 pre-configured personas with
+              pre-seeded Project Apollo data.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                id: "pm",
+                role: "PROJECT_MANAGER" as UserRole,
+                title: "Lead PM",
+                desc: "Audits handover progress, reviews extracted findings, resolves blocker risks, and verifies readiness scores.",
+                action: "Login as PM",
+              },
+              {
+                id: "outgoing",
+                role: "OUTGOING_MEMBER" as UserRole,
+                title: "Outgoing Lead",
+                desc: "Ingests architectural specs, runs AI extraction, tags critical dependencies, and compiles the handover dossier.",
+                action: "Login as Outgoing",
+              },
+              {
+                id: "incoming",
+                role: "INCOMING_MEMBER" as UserRole,
+                title: "Incoming Member",
+                desc: "Read-only access to browse verified evidence citations, inspect timelines, download dossiers, and ask grounded questions.",
+                action: "Login as Incoming",
+              },
+              {
+                id: "admin",
+                role: "ADMIN" as UserRole,
+                title: "System Admin",
+                desc: "Full administrative governance, RBAC role assignments, project configuration, and cryptographic audit log monitoring.",
+                action: "Login as Admin",
+              },
+            ].map((persona) => (
+              <div
+                key={persona.id}
+                className="p-6 rounded-xl bg-neutral-900/60 border border-white/10 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="w-9 h-9 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 mb-4">
+                    <Users className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-base font-bold text-white mb-1.5">
+                    {persona.title}
+                  </h3>
+                  <p className="text-neutral-400 text-xs leading-relaxed mb-6">
+                    {persona.desc}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleRoleClick(persona.role, persona.id)}
+                  disabled={isLoggingIn === persona.id}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xs font-bold rounded-lg transition cursor-pointer active:scale-95 disabled:opacity-50"
+                >
+                  {isLoggingIn === persona.id ? (
+                    <span>Authenticating...</span>
+                  ) : (
+                    <>
+                      <span>{persona.action}</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-neutral-400" />
+                    </>
+                  )}
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* FAQS / COMMON QUESTIONS ANSWERED                                          */}
+        {/* ========================================================================= */}
+        <section
+          id="faq"
+          className="px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto py-24 border-b border-white/10"
+        >
+          <div className="mb-14">
+            <span className="text-xs font-mono uppercase tracking-widest text-teal-400">
+              FAQS
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black text-white mt-2 tracking-tight">
+              Common Questions Answered
+            </h2>
+            <p className="text-neutral-400 text-sm sm:text-base mt-3">
+              Key technical details on evidence linking, RBAC enforcement, and data privacy.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              {
+                q: "What makes Knowledge Continuity different from generic AI summarizers?",
+                a: "Generic tools hallucinate details that cause catastrophic production outages. Knowledge Continuity links every extracted milestone, architectural choice, and blocker directly to the exact page number and text span of the original authorized engineering document.",
+              },
+              {
+                q: "How does the Evidence Anchoring coordinate engine work?",
+                a: "Using PyMuPDF, our ingestion engine maps sub-millimeter bounding box coordinates for each extracted chunk. When an engineer clicks an evidence reference, the original PDF highlights the exact source snippet instantly.",
+              },
+              {
+                q: "How does Role-Based Access Control (RBAC) protect sensitive data?",
+                a: "The platform enforces strict role boundaries: Outgoing Engineers and Admins manage ingestion, Lead PMs have exclusive approval rights, and Incoming Engineers are granted read-only exploration to prevent accidental modifications.",
+              },
+              {
+                q: "What file formats are supported for ingestion?",
+                a: "The system ingests PDF architectural specs, DOCX handover documents, Markdown repositories, and plain text sprint logs. All documents undergo SHA-256 integrity hashing upon upload.",
+              },
+              {
+                q: "How is the Handover Readiness Score computed?",
+                a: "The engine calculates a composite weighted percentage (0-100%) based on verified fact ratios, documentation coverage across all 10 domain entities, resolution of critical blockers, and proximity to the target handover date.",
+              },
+              {
+                q: "Are extracted dossiers tamper-proof for compliance audits?",
+                a: "Yes. Every compiled 13-section Handover Dossier includes an embedded cryptographic SHA-256 hash tree, immutable sign-off timestamp, and human reviewer identity for SOC-2 and ISO audit readiness.",
+              },
+            ].map((faq, idx) => {
+              const isOpen = openFaq === idx;
+              return (
+                <div
+                  key={idx}
+                  className="rounded-xl bg-neutral-900/60 border border-white/10 overflow-hidden transition"
+                >
+                  <button
+                    onClick={() => toggleFaq(idx)}
+                    className="w-full p-5 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-white/[0.02] transition"
+                  >
+                    <span className="text-sm sm:text-base font-semibold text-white">
+                      {faq.q}
+                    </span>
+                    {isOpen ? (
+                      <ChevronUp className="w-4 h-4 text-teal-400 shrink-0" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-neutral-400 shrink-0" />
+                    )}
+                  </button>
+                  {isOpen && (
+                    <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-neutral-400 leading-relaxed border-t border-white/5">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* CALL TO ACTION BANNER (LET'S TALK / LAUNCH CONSOLE)                       */}
+        {/* ========================================================================= */}
+        <section className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24">
+          <div className="relative rounded-2xl bg-gradient-to-b from-neutral-900/90 to-[#080808] border border-white/15 p-8 sm:p-14 text-center overflow-hidden shadow-2xl backdrop-blur-md">
+            {/* Halftone subtle glow */}
+            <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-sky-500/10 blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 max-w-2xl mx-auto">
+              <span className="text-xs font-mono uppercase tracking-widest text-teal-400">
+                GET STARTED TODAY
+              </span>
+              <h2 className="text-3xl sm:text-5xl font-black text-white mt-2 mb-4 tracking-tight">
+                Let&apos;s Build Unbreakable Continuity.
+              </h2>
+              <p className="text-neutral-400 text-sm sm:text-base mb-8 leading-relaxed">
+                Eliminate tribal knowledge loss and onboard incoming engineers with
+                verifiable citations, automated dossiers, and zero guesswork.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <button
+                  onClick={onEnterApp}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3.5 bg-white hover:bg-neutral-200 text-black text-sm font-bold rounded-lg transition cursor-pointer shadow-md active:scale-95"
+                >
+                  <span>Launch Knowledge Console</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <a
+                  href="http://127.0.0.1:8000/docs"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3.5 bg-white/5 hover:bg-white/10 border border-white/15 text-white text-sm font-semibold rounded-lg transition"
+                >
+                  <Terminal className="w-4 h-4 text-neutral-400" />
+                  <span>Interactive API Docs</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* ========================================================================= */}
+      {/* FOOTER (Quantum Agency Legal & Architecture Links)                         */}
+      {/* ========================================================================= */}
+      <footer className="border-t border-white/10 bg-[#020202] py-12 px-4 sm:px-8 relative z-10 text-xs font-mono text-neutral-500">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-md bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
+              <BrainCircuit className="w-4 h-4" />
             </div>
             <div>
-              <span className="font-extrabold text-xs sm:text-sm tracking-tight text-white block">
+              <span className="font-bold text-white tracking-wider">
                 KNOWLEDGE CONTINUITY
               </span>
-              <span className="text-[10px] text-teal-400 font-semibold tracking-wide block">
-                Enterprise Handover Platform
-              </span>
+              <p className="text-[10px] text-neutral-500 mt-0.5">
+                Evidence-Linked Project Knowledge Handover Platform
+              </p>
             </div>
           </div>
 
-          <nav className="hidden lg:flex items-center gap-6 text-xs font-semibold text-slate-300">
-            {sectionIds.map((sec, idx) => (
-              <button
-                key={sec.id}
-                onClick={() => scrollToSection(idx)}
-                className={`transition cursor-pointer ${
-                  activeSection === idx
-                    ? "text-teal-400 font-bold border-b-2 border-teal-400 pb-0.5"
-                    : "text-slate-400 hover:text-white"
-                }`}
-              >
-                {sec.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center justify-center gap-6 text-neutral-400">
+            <button
+              onClick={onEnterApp}
+              className="hover:text-white transition cursor-pointer"
+            >
+              Console
+            </button>
+            <Link href="/privacy" className="hover:text-white transition">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="hover:text-white transition">
+              Terms of Service
+            </Link>
             <a
               href="http://127.0.0.1:8000/docs"
               target="_blank"
               rel="noreferrer"
-              className="hover:text-teal-400 transition flex items-center gap-1 text-slate-400"
+              className="hover:text-white transition"
             >
-              API Docs <ExternalLink className="w-3 h-3" />
+              API Reference
             </a>
-          </nav>
+          </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onEnterApp}
-              className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-md shadow-sm transition cursor-pointer"
-            >
-              Launch Console
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+          <div className="text-center md:text-right text-[11px] text-neutral-600">
+            &copy; {new Date().getFullYear()} Knowledge Continuity. All rights reserved.
           </div>
         </div>
-      </header>
-
-      {/* Floating Section Indicators (Right Rectangles) */}
-      <div className="fixed right-5 top-1/2 -translate-y-1/2 z-50 hidden xl:flex flex-col items-center gap-2.5">
-        {sectionIds.map((sec, idx) => {
-          const isActive = activeSection === idx;
-          return (
-            <button
-              key={sec.id}
-              onClick={() => scrollToSection(idx)}
-              className="group relative flex items-center justify-end p-1 transition cursor-pointer"
-              aria-label={`Jump to ${sec.label}`}
-            >
-              <span className="absolute right-6 px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-slate-200 text-[10px] font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-md">
-                {sec.label}
-              </span>
-              <div
-                className={`transition-all rounded-xs ${
-                  isActive
-                    ? "w-2.5 h-7 bg-teal-400 shadow-sm"
-                    : "w-2 h-2 bg-slate-700 hover:bg-slate-400"
-                }`}
-              />
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Responsive Section-by-Section Container */}
-      <div
-        ref={containerRef}
-        className="h-screen w-full overflow-y-auto snap-y snap-mandatory scroll-smooth relative z-10"
-      >
-        {/* ======================================================== */}
-        {/* Slide 1: Hero Section */}
-        {/* ======================================================== */}
-        <section
-          id="hero"
-          data-section-id="hero"
-          className="min-h-screen w-full snap-start flex flex-col justify-center items-center py-20 px-4 sm:px-6 md:px-8 relative"
-        >
-          <div
-            className={`max-w-4xl w-full mx-auto text-center space-y-6 transition-all duration-1000 ease-out transform ${
-              visibleSections["hero"] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-            }`}
-          >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs font-semibold">
-              <span className="w-2 h-2 rounded-xs bg-teal-400" />
-              <span>Evidence-Linked Knowledge Transfer & Handover Synthesis</span>
-            </div>
-
-            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-white">
-              Automated Knowledge Handover Platform for Engineering Teams
-            </h1>
-
-            <p className="text-xs sm:text-sm md:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
-              When key engineers transition off projects, architectural rationale and operational risks are often lost.
-              <strong> Knowledge Continuity</strong> parses authorized engineering documentation, grounds every finding to exact source quotations, identifies contradictory dates, and compiles an audited 13-section handover dossier.
-            </p>
-
-            {/* Action CTAs */}
-            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 pt-2">
-              <button
-                onClick={onEnterApp}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-500 text-white text-xs sm:text-sm font-bold rounded-md shadow-md transition cursor-pointer"
-              >
-                Enter Handover Console
-                <ArrowRight className="w-4 h-4" />
-              </button>
-
-              <button
-                onClick={() => scrollToSection(4)}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold rounded-md border border-slate-700 transition cursor-pointer"
-              >
-                <Users className="w-4 h-4 text-teal-400" />
-                Select Demo Role
-              </button>
-
-              <a
-                href="http://127.0.0.1:8000/docs"
-                target="_blank"
-                rel="noreferrer"
-                className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-900/60 hover:bg-slate-800 text-slate-300 text-xs sm:text-sm font-medium rounded-md border border-slate-800 transition"
-              >
-                <FileText className="w-4 h-4 text-slate-400" />
-                FastAPI Docs
-              </a>
-            </div>
-
-            {/* Real Concrete Specifications (No fake counters or fake metrics) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl mx-auto pt-4 text-left">
-              <div className="p-3.5 bg-slate-900/70 rounded-lg border border-slate-800">
-                <span className="text-xs font-bold text-teal-400 block uppercase">10 Entity Schemas</span>
-                <p className="text-[11px] text-slate-400 mt-1">Structured AST & Pydantic model validation</p>
-              </div>
-              <div className="p-3.5 bg-slate-900/70 rounded-lg border border-slate-800">
-                <span className="text-xs font-bold text-teal-400 block uppercase">Source Provenance</span>
-                <p className="text-[11px] text-slate-400 mt-1">Exact character offset & page-level chunking</p>
-              </div>
-              <div className="p-3.5 bg-slate-900/70 rounded-lg border border-slate-800">
-                <span className="text-xs font-bold text-teal-400 block uppercase">13 Dossier Sections</span>
-                <p className="text-[11px] text-slate-400 mt-1">Structured Markdown and ReportLab PDF output</p>
-              </div>
-              <div className="p-3.5 bg-slate-900/70 rounded-lg border border-slate-800">
-                <span className="text-xs font-bold text-teal-400 block uppercase">Verification Gate</span>
-                <p className="text-[11px] text-slate-400 mt-1">Manager sign-off required prior to release</p>
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={() => scrollToSection(1)}
-            className="mt-8 flex flex-col items-center gap-1 text-slate-400 hover:text-teal-400 transition cursor-pointer text-xs"
-          >
-            <span>Architecture & Pipeline</span>
-            <ArrowDown className="w-4 h-4 text-teal-400" />
-          </button>
-        </section>
-
-        {/* ======================================================== */}
-        {/* Slide 2: 5-Stage Architecture Pipeline */}
-        {/* ======================================================== */}
-        <section
-          id="pipeline"
-          data-section-id="pipeline"
-          className="min-h-screen w-full snap-start flex flex-col justify-center items-center py-20 px-4 sm:px-6 md:px-8"
-        >
-          <div
-            className={`max-w-5xl w-full mx-auto space-y-6 transition-all duration-1000 ease-out transform ${
-              visibleSections["pipeline"] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-            }`}
-          >
-            <div className="text-center space-y-1.5">
-              <span className="text-xs font-bold uppercase tracking-widest text-teal-400">
-                System Workflow
-              </span>
-              <h2 className="text-xl sm:text-3xl font-extrabold text-white">
-                The 5-Stage Ingestion & Verification Pipeline
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
-                From raw document parsing to verified, role-gated PDF export.
-              </p>
-            </div>
-
-            {/* Interactive Pipeline Tabs */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
-              {stages.map((st, idx) => {
-                const Icon = st.icon;
-                const isSelected = activeStage === idx;
-                return (
-                  <button
-                    key={st.num}
-                    onClick={() => setActiveStage(idx)}
-                    className={`p-3 rounded-lg border text-left transition cursor-pointer flex flex-col justify-between space-y-2 ${
-                      isSelected
-                        ? "bg-slate-900 border-teal-500 ring-1 ring-teal-500/30 shadow-md"
-                        : "bg-slate-950/60 border-slate-800 hover:border-slate-700"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className={`text-xs font-mono font-bold ${isSelected ? "text-teal-400" : "text-slate-500"}`}>
-                        {st.num}
-                      </span>
-                      <Icon className={`w-4 h-4 ${isSelected ? "text-teal-400" : "text-slate-500"}`} />
-                    </div>
-                    <div>
-                      <h4 className="text-[11px] font-bold text-white tracking-wide truncate">{st.title}</h4>
-                      <span className="text-[10px] text-slate-400 truncate block">{st.subtitle}</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Active Stage Highlight Card */}
-            <div className="p-5 sm:p-6 bg-slate-900/80 rounded-xl border border-slate-800 space-y-3 shadow-lg">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="px-2.5 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/40 text-xs font-mono font-bold">
-                    Stage {stages[activeStage].num}
-                  </span>
-                  <h3 className="text-sm sm:text-base font-bold text-white">
-                    {stages[activeStage].title}: {stages[activeStage].subtitle}
-                  </h3>
-                </div>
-                <span className="text-[11px] text-teal-400 font-mono">{stages[activeStage].detail}</span>
-              </div>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                {stages[activeStage].desc}
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* ======================================================== */}
-        {/* Slide 3: 10 Knowledge Entity Types */}
-        {/* ======================================================== */}
-        <section
-          id="entities"
-          data-section-id="entities"
-          className="min-h-screen w-full snap-start flex flex-col justify-center items-center py-20 px-4 sm:px-6 md:px-8"
-        >
-          <div
-            className={`max-w-5xl w-full mx-auto space-y-6 transition-all duration-1000 ease-out transform ${
-              visibleSections["entities"] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-            }`}
-          >
-            <div className="text-center space-y-1.5">
-              <span className="text-xs font-bold uppercase tracking-widest text-teal-400">
-                Data Modeling
-              </span>
-              <h2 className="text-xl sm:text-3xl font-extrabold text-white">
-                10 Structured Knowledge Entity Types
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
-                Categorizing high-impact engineering facts with strict typing and schema validation.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-              {entities.map((ent) => {
-                const Icon = ent.icon;
-                return (
-                  <div
-                    key={ent.id}
-                    className="p-3.5 bg-slate-900/60 rounded-lg border border-slate-800 hover:border-slate-700 transition space-y-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="w-7 h-7 rounded-md bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
-                        <Icon className="w-3.5 h-3.5" />
-                      </div>
-                      <span className="text-[10px] font-mono text-teal-400 font-semibold">{ent.spec}</span>
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-white">{ent.label}</h4>
-                      <p className="text-[11px] text-slate-400 mt-0.5 leading-snug line-clamp-2">{ent.desc}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* ======================================================== */}
-        {/* Slide 4: Evidence & Zero-Hallucination Showcase */}
-        {/* ======================================================== */}
-        <section
-          id="evidence"
-          data-section-id="evidence"
-          className="min-h-screen w-full snap-start flex flex-col justify-center items-center py-20 px-4 sm:px-6 md:px-8"
-        >
-          <div
-            className={`max-w-5xl w-full mx-auto space-y-6 transition-all duration-1000 ease-out transform ${
-              visibleSections["evidence"] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-            }`}
-          >
-            <div className="text-center space-y-1.5">
-              <span className="text-xs font-bold uppercase tracking-widest text-teal-400">
-                Integrity & Auditability
-              </span>
-              <h2 className="text-xl sm:text-3xl font-extrabold text-white">
-                Evidence Before Confidence
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
-                No assertion enters the handover report without an audited source citation and chunk offset.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Left: Traditional Unverified AI output */}
-              <div className="p-5 bg-rose-950/20 rounded-xl border border-rose-500/30 space-y-3.5">
-                <div className="flex items-center justify-between border-b border-rose-500/30 pb-2.5">
-                  <span className="text-xs font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <AlertTriangle className="w-4 h-4" /> Unverified LLM Generation
-                  </span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300">
-                    High Risk
-                  </span>
-                </div>
-                <p className="text-xs text-slate-300 leading-relaxed italic bg-slate-900/60 p-3 rounded border border-slate-800">
-                  &ldquo;The payment system was refactored by Marcus Chen and completed in Q2. Everything should run fine.&rdquo;
-                </p>
-                <div className="text-[11px] text-rose-300 space-y-1.5 pt-1">
-                  <div className="flex items-center gap-1.5">
-                    <X className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                    <span>No document provenance or page reference</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <X className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                    <span>Invented owner name without source quotation</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <X className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                    <span>Misses conflicting release cutoffs across sprint logs</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right: Knowledge Continuity Verified finding */}
-              <div className="p-5 bg-teal-950/20 rounded-xl border border-teal-500/40 space-y-3.5">
-                <div className="flex items-center justify-between border-b border-teal-500/30 pb-2.5">
-                  <span className="text-xs font-bold text-teal-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4" /> Knowledge Continuity Engine
-                  </span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-500/20 text-teal-300">
-                    Audited
-                  </span>
-                </div>
-                <div className="bg-slate-900/80 p-3 rounded border border-slate-800 text-xs font-mono text-teal-300 leading-relaxed">
-                  &ldquo;We migrated the analytical ingestion engine to Kafka on May 20. Target cut-off is Sprint 25.&rdquo;
-                </div>
-                <div className="text-[11px] text-teal-300 space-y-1.5 pt-1">
-                  <div className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-teal-400 shrink-0" />
-                    <span>Anchored to: <strong className="text-white">Apollo_Architecture_Decisions.pdf, Page 1</strong></span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-teal-400 shrink-0" />
-                    <span>Match Score: <strong className="text-white">0.96 (SequenceMatcher Overlap)</strong></span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                    <span>Cross-Doc Conflict: <span className="text-amber-300">Sprint 24 note cites May 30 (Flagged for Review)</span></span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ======================================================== */}
-        {/* Slide 5: Role-Based Access Accounts */}
-        {/* ======================================================== */}
-        <section
-          id="demo-roles"
-          data-section-id="demo-roles"
-          className="min-h-screen w-full snap-start flex flex-col justify-center items-center py-20 px-4 sm:px-6 md:px-8"
-        >
-          <div
-            className={`max-w-5xl w-full mx-auto space-y-6 transition-all duration-1000 ease-out transform ${
-              visibleSections["demo-roles"] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-            }`}
-          >
-            <div className="text-center space-y-1.5">
-              <span className="text-xs font-bold uppercase tracking-widest text-teal-400">
-                Access Control
-              </span>
-              <h2 className="text-xl sm:text-3xl font-extrabold text-white">
-                Role-Based Access Governance
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
-                Authenticate as any of the four roles to inspect backend authorization enforcement.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* PM */}
-              <div className="p-4 bg-slate-900/80 rounded-xl border border-teal-500/40 hover:border-teal-400 transition flex flex-col justify-between space-y-3 shadow-sm">
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-teal-500/20 text-teal-300">
-                      PROJECT_MANAGER
-                    </span>
-                    <CheckSquare className="w-3.5 h-3.5 text-teal-400" />
-                  </div>
-                  <h4 className="text-sm font-bold text-white">Elena Rostova</h4>
-                  <p className="text-[11px] text-slate-400 leading-snug">
-                    Full project governance, human review queue, approve or edit findings, and publish handovers.
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleDemoRoleClick("PROJECT_MANAGER")}
-                  disabled={Boolean(isLoggingIn)}
-                  className="w-full py-2 bg-teal-600 hover:bg-teal-500 disabled:opacity-50 text-white text-xs font-bold rounded-md transition cursor-pointer"
-                >
-                  {isLoggingIn === "PROJECT_MANAGER" ? "Authenticating..." : "Launch as Lead PM"}
-                </button>
-              </div>
-
-              {/* Incoming Engineer */}
-              <div className="p-4 bg-slate-900/80 rounded-xl border border-cyan-500/40 hover:border-cyan-400 transition flex flex-col justify-between space-y-3 shadow-sm">
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300">
-                      INCOMING_MEMBER
-                    </span>
-                    <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                  </div>
-                  <h4 className="text-sm font-bold text-white">Marcus Chen</h4>
-                  <p className="text-[11px] text-slate-400 leading-snug">
-                    Authorized to view only manager-approved handovers. Unapproved drafts return 403 Forbidden.
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleDemoRoleClick("INCOMING_MEMBER")}
-                  disabled={Boolean(isLoggingIn)}
-                  className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-xs font-bold rounded-md transition cursor-pointer"
-                >
-                  {isLoggingIn === "INCOMING_MEMBER" ? "Authenticating..." : "Launch as Incoming Eng"}
-                </button>
-              </div>
-
-              {/* Outgoing Lead */}
-              <div className="p-4 bg-slate-900/80 rounded-xl border border-slate-700 hover:border-slate-600 transition flex flex-col justify-between space-y-3 shadow-sm">
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-slate-800 text-slate-300">
-                      OUTGOING_MEMBER
-                    </span>
-                    <UploadCloud className="w-3.5 h-3.5 text-slate-400" />
-                  </div>
-                  <h4 className="text-sm font-bold text-white">Sarah Jenkins</h4>
-                  <p className="text-[11px] text-slate-400 leading-snug">
-                    Authorized to ingest files, upload sprint notes, inspect source text chunks, and verify evidence.
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleDemoRoleClick("OUTGOING_MEMBER")}
-                  disabled={Boolean(isLoggingIn)}
-                  className="w-full py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white text-xs font-bold rounded-md transition cursor-pointer"
-                >
-                  {isLoggingIn === "OUTGOING_MEMBER" ? "Authenticating..." : "Launch as Outgoing Lead"}
-                </button>
-              </div>
-
-              {/* Admin */}
-              <div className="p-4 bg-slate-900/80 rounded-xl border border-slate-700 hover:border-slate-600 transition flex flex-col justify-between space-y-3 shadow-sm">
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-slate-800 text-slate-300">
-                      ADMIN
-                    </span>
-                    <Lock className="w-3.5 h-3.5 text-slate-400" />
-                  </div>
-                  <h4 className="text-sm font-bold text-white">Alexander Vance</h4>
-                  <p className="text-[11px] text-slate-400 leading-snug">
-                    Full system administration across all projects, member permissions, immutable audit logs, and settings.
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleDemoRoleClick("ADMIN")}
-                  disabled={Boolean(isLoggingIn)}
-                  className="w-full py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white text-xs font-bold rounded-md transition cursor-pointer"
-                >
-                  {isLoggingIn === "ADMIN" ? "Authenticating..." : "Launch as System Admin"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ======================================================== */}
-        {/* Slide 6: 13-Section Dossier Architecture & Footer */}
-        {/* ======================================================== */}
-        <section
-          id="dossier"
-          data-section-id="dossier"
-          className="min-h-screen w-full snap-start flex flex-col justify-between items-center py-20 px-4 sm:px-6 md:px-8"
-        >
-          <div
-            className={`max-w-5xl w-full mx-auto space-y-6 my-auto transition-all duration-1000 ease-out transform ${
-              visibleSections["dossier"] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-            }`}
-          >
-            <div className="text-center space-y-1">
-              <span className="text-xs font-bold uppercase tracking-widest text-teal-400">
-                Official Report Architecture
-              </span>
-              <h2 className="text-xl sm:text-3xl font-extrabold text-white">
-                The 13-Section Handover Dossier
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
-                Synthesized for engineering legibility and downloadable as a ReportLab PDF report.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 text-xs">
-              {[
-                "1. Project Overview & Scope",
-                "2. Current Status & Health",
-                "3. Completed Work & Sprints",
-                "4. Pending Tasks & Deadlines",
-                "5. Task Ownership Matrix",
-                "6. Decisions Record (ADR)",
-                "7. Dependencies & Couplings",
-                "8. Blockers & Escalations",
-                "9. Technical Debt & Risks",
-                "10. Unresolved RFC Questions",
-                "11. Next Actions (Day 1 / Week 1)",
-                "12. Evidence Citation Table",
-                "13. Managerial Sign-Off Stamp",
-              ].map((title, i) => (
-                <div key={i} className="p-2.5 bg-slate-900/60 rounded-md border border-slate-800 flex items-center gap-2">
-                  <span className="w-5 h-5 rounded bg-teal-500/20 text-teal-400 flex items-center justify-center font-mono font-bold text-[10px] shrink-0">
-                    {i + 1}
-                  </span>
-                  <span className="font-medium text-slate-200 text-[11px] truncate">{title.split(". ")[1]}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Launch Console Button */}
-            <div className="pt-3 text-center">
-              <button
-                onClick={onEnterApp}
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-teal-600 hover:bg-teal-500 text-white text-xs sm:text-sm font-bold rounded-md shadow-md transition cursor-pointer"
-              >
-                Launch Console Now
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Clean Enterprise Footer (No Team Names, Includes Privacy & Terms) */}
-          <footer className="w-full max-w-5xl border-t border-slate-800 pt-6 mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-white">Knowledge Continuity</span>
-              <span>© 2026. All rights reserved.</span>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-5 text-xs">
-              <Link href="/privacy" className="hover:text-teal-400 transition flex items-center gap-1">
-                <Shield className="w-3.5 h-3.5" /> Privacy Policy
-              </Link>
-              <Link href="/terms" className="hover:text-teal-400 transition flex items-center gap-1">
-                <Scale className="w-3.5 h-3.5" /> Terms and Conditions
-              </Link>
-              <a
-                href="http://127.0.0.1:8000/docs"
-                target="_blank"
-                rel="noreferrer"
-                className="text-slate-400 hover:text-teal-400 transition flex items-center gap-1"
-              >
-                API Docs <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
-          </footer>
-        </section>
-      </div>
+      </footer>
     </div>
   );
 }
