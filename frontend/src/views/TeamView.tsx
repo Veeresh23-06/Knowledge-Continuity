@@ -220,19 +220,7 @@ export function TeamView() {
             const isCurrent = user?.role === r;
             const cred = DEMO_CREDENTIALS[r];
 
-            if (!currentProject) {
-    return (
-      <div className="bg-white rounded-xl border border-dashed border-slate-200 p-12 text-center space-y-3 my-8 animate-in fade-in duration-300">
-        <Users className="w-10 h-10 text-slate-300 mx-auto" />
-        <h3 className="text-base font-bold text-slate-800">No Project Selected</h3>
-        <p className="text-xs text-slate-500 max-w-sm mx-auto">
-          Please select a workspace from the left sidebar to view and manage team member permissions.
-        </p>
-      </div>
-    );
-  }
-
-  return (
+            return (
               <button
                 key={r}
                 onClick={() => switchDemoRole(r)}

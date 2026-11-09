@@ -7,6 +7,7 @@ import { UploadModal } from "@/components/UploadModal";
 import { NewProjectModal } from "@/components/NewProjectModal";
 import { AuthView } from "@/components/AuthView";
 import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme-context";
 import { useToast } from "@/components/Toast";
 
 // Views
@@ -28,6 +29,8 @@ export default function Home() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const { user, isLoading, currentProject, setCurrentProject, refreshProjects, switchDemoRole } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const { toast } = useToast();
 
   const handleOpenUpload = () => {
@@ -72,7 +75,11 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-50">
+    <div
+      className={`flex h-screen w-screen overflow-hidden transition-colors duration-300 ${
+        isDark ? "bg-[#020202] text-white" : "bg-slate-50 text-slate-900"
+      }`}
+    >
       {/* 1. Left Navy Sidebar */}
       <Sidebar
         activeTab={activeTab}

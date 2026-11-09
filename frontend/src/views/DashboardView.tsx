@@ -47,9 +47,22 @@ export function DashboardView({ onNavigate, onUpload }: DashboardViewProps) {
   useEffect(() => {
     async function loadData() {
       try {
+        if (!currentProject) {
+          // If no project is selected, clear project-specific stats
+          setStats(null);
+          const [sumData, actData] = await Promise.allSettled([
+            api.getDashboardSummary(),
+            api.getRecentActivity(),
+          ]);
+
+          if (sumData.status === "fulfilled") setSummary(sumData.value);
+          if (actData.status === "fulfilled") setActivityLogs(actData.value);
+          return;
+        }
+
         const [sumData, statData, actData] = await Promise.allSettled([
           api.getDashboardSummary(),
-          api.getDashboardStats(currentProject?.id),
+          api.getDashboardStats(currentProject.id),
           api.getRecentActivity(),
         ]);
 
@@ -65,23 +78,30 @@ export function DashboardView({ onNavigate, onUpload }: DashboardViewProps) {
     loadData();
   }, [currentProject]);
 
-  // Real Chart data preparation
-  const entityData = stats?.findings_by_type && Object.keys(stats.findings_by_type).length > 0
-    ? Object.entries(stats.findings_by_type).map(([name, value]) => ({
-        name: name.replace("_", " "),
-        count: value,
-      }))
-    : [];
+  // Real Chart data preparation - strictly scoped to active project
+  const entityData =
+    currentProject && stats?.findings_by_type && Object.keys(stats.findings_by_type).length > 0
+      ? Object.entries(stats.findings_by_type).map(([name, value]) => ({
+          name: name.replace("_", " "),
+          count: value,
+        }))
+      : [];
 
-  const hasEntityData = entityData.length > 0 && entityData.some((d) => d.count > 0);
+  const hasEntityData = currentProject ? entityData.length > 0 && entityData.some((d) => d.count > 0) : false;
 
-  const verifData = [
-    { name: "Verified", value: stats?.verification_breakdown?.["VERIFIED"] || 0, color: "#0d9488" },
-    { name: "Conflicting", value: stats?.verification_breakdown?.["CONFLICTING"] || 0, color: "#f59e0b" },
-    { name: "Unsupported", value: stats?.verification_breakdown?.["UNSUPPORTED"] || 0, color: "#f43f5e" },
-  ];
+  const verifData = currentProject
+    ? [
+        { name: "Verified", value: stats?.verification_breakdown?.["VERIFIED"] || 0, color: "#0d9488" },
+        { name: "Conflicting", value: stats?.verification_breakdown?.["CONFLICTING"] || 0, color: "#f59e0b" },
+        { name: "Unsupported", value: stats?.verification_breakdown?.["UNSUPPORTED"] || 0, color: "#f43f5e" },
+      ]
+    : [
+        { name: "Verified", value: 0, color: "#0d9488" },
+        { name: "Conflicting", value: 0, color: "#f59e0b" },
+        { name: "Unsupported", value: 0, color: "#f43f5e" },
+      ];
 
-  const totalVerifiedCount = verifData.reduce((acc, cur) => acc + cur.value, 0);
+  const totalVerifiedCount = currentProject ? verifData.reduce((acc, cur) => acc + cur.value, 0) : 0;
 
   const readinessScore = currentProject?.readiness_score || 0;
 
@@ -356,7 +376,9 @@ export function DashboardView({ onNavigate, onUpload }: DashboardViewProps) {
               <ShieldCheck className="w-7 h-7 text-slate-300" />
               <p className="text-xs font-semibold text-slate-700">No Audited Findings</p>
               <p className="text-[11px] text-slate-400 max-w-xs">
-                Run verification audits against source document pages to populate evidence metrics.
+                {currentProject
+                  ? "Run verification audits against source document pages to populate evidence metrics."
+                  : "Select a project from the sidebar to view evidence verification status."}
               </p>
             </div>
           )}

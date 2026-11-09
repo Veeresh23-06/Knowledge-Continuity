@@ -2,46 +2,66 @@
 
 @layer base {
   :root {
-    --background: #f8fafc;
-    --foreground: #0f172a;
-    --card: #ffffff;
-    --card-foreground: #0f172a;
-    --primary: #0d9488;
+    --background: #020202;
+    --foreground: #f4f4f5;
+    --card: #09090b;
+    --card-foreground: #f4f4f5;
+    --primary: #14b8a6;
     --primary-foreground: #ffffff;
-    --secondary: #1e293b;
-    --secondary-foreground: #ffffff;
-    --accent: #2563eb;
+    --secondary: #18181b;
+    --secondary-foreground: #f4f4f5;
+    --accent: #0ea5e9;
     --accent-foreground: #ffffff;
-    --muted: #f1f5f9;
-    --muted-foreground: #64748b;
-    --border: #e2e8f0;
+    --muted: #121215;
+    --muted-foreground: #a1a1aa;
+    --border: rgba(255, 255, 255, 0.08);
   }
 }
 
+html.dark {
+  --background: #020202;
+  --foreground: #f4f4f5;
+  --card: #09090b;
+  --card-foreground: #f4f4f5;
+  --border: rgba(255, 255, 255, 0.1);
+  color-scheme: dark;
+}
+
+html.light {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --border: #e2e8f0;
+  color-scheme: light;
+}
+
 body {
-  color: var(--foreground);
-  background-color: var(--background);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom scrollbars */
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-::-webkit-scrollbar-track {
+html.dark ::-webkit-scrollbar-track {
+  background: #020202;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 3px;
+}
+html.light ::-webkit-scrollbar-track {
   background: #f1f5f9;
 }
-::-webkit-scrollbar-thumb {
+html.light ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 3px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
 
-/* Micro-animations & Interactive Polish */
+/* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
@@ -60,6 +80,76 @@ body {
   animation: modalPop 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-button:active:not(:disabled) {
-  transform: scale(0.98);
+/* ========================================================================= */
+/* SCOPED DARK THEME CONSOLE ADAPTATIONS (ONLY ACTIVE IN DARK MODE)          */
+/* ========================================================================= */
+
+html.dark .bg-white {
+  background-color: #09090b !important;
+  color: #f4f4f5 !important;
+}
+
+html.dark .border-slate-200,
+html.dark .border-slate-300 {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark .border-slate-100 {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+html.dark .text-slate-900,
+html.dark .text-slate-800,
+html.dark .text-slate-700 {
+  color: #f4f4f5 !important;
+}
+
+html.dark .text-slate-600,
+html.dark .text-slate-500,
+html.dark .text-slate-400 {
+  color: #a1a1aa !important;
+}
+
+html.dark .bg-slate-50,
+html.dark .bg-slate-100 {
+  background-color: #0d0d12 !important;
+  color: #e4e4e7 !important;
+}
+
+html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark input:not([type="checkbox"]):not([type="radio"]),
+html.dark select,
+html.dark textarea {
+  background-color: #0d0d12 !important;
+  color: #f4f4f5 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #71717a !important;
+}
+
+html.dark .shadow-2xs,
+html.dark .shadow-xs,
+html.dark .shadow-sm {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Prevent dev overlay badges from obscuring sidebar controls */
+nextjs-portal,
+[data-nextjs-toast-wrapper],
+[data-nextjs-dialog-overlay] {
+  pointer-events: none !important;
+}
+nextjs-portal {
+  opacity: 0.15;
+  transition: opacity 0.2s;
+}
+nextjs-portal:hover {
+  opacity: 1;
 }

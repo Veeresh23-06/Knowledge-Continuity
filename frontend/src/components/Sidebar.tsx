@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { UserRole } from "@/lib/types";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export type NavTab =
   | "dashboard"
@@ -264,13 +265,15 @@ export function Sidebar({
             </div>
           </div>
 
-          <button
-            onClick={() => logout()}
-            title="Sign out"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-850 transition shrink-0 cursor-pointer"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={() => logout()}
+              title="Sign out"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-800 transition shrink-0 cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
     </aside>

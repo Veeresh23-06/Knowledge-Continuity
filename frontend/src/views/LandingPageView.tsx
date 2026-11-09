@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import {
   BrainCircuit,
@@ -33,6 +33,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ThreeCanvas } from "@/components/ThreeCanvas";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { useTheme } from "@/lib/theme-context";
 import { UserRole } from "@/lib/types";
 
 interface LandingPageViewProps {
@@ -43,6 +45,8 @@ interface LandingPageViewProps {
 export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewProps) {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [isLoggingIn, setIsLoggingIn] = useState<string | null>(null);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const handleRoleClick = async (role: UserRole, roleId: string) => {
     setIsLoggingIn(roleId);
@@ -58,73 +62,105 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
   };
 
   return (
-    <div className="min-h-screen bg-[#020202] text-white selection:bg-teal-500/30 selection:text-teal-200 font-sans relative overflow-x-hidden">
-      {/* 3D Knowledge Network & Isometric Cube Background */}
+    <div
+      className={`min-h-screen transition-colors duration-300 font-sans relative overflow-x-hidden ${
+        isDark
+          ? "bg-[#020202] text-white selection:bg-teal-500/30 selection:text-teal-200"
+          : "bg-[#f8fafc] text-slate-900 selection:bg-teal-500/30 selection:text-teal-900"
+      }`}
+    >
+      {/* 3D Knowledge Network & Interactive Polyhedron Background */}
       <ThreeCanvas />
 
       {/* Subtle Halftone Grid Pattern Overlay */}
       <div
-        className="fixed inset-0 pointer-events-none z-0 opacity-25"
+        className="fixed inset-0 pointer-events-none z-0 opacity-20"
         style={{
-          backgroundImage:
-            "radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px)",
+          backgroundImage: isDark
+            ? "radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px)"
+            : "radial-gradient(rgba(0, 0, 0, 0.08) 1px, transparent 1px)",
           backgroundSize: "28px 28px",
         }}
         aria-hidden="true"
       />
 
-      {/* Floating Glassmorphism Header (Quantum Navigation Style) */}
-      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-[#020202]/85 border-b border-white/10 px-4 sm:px-8 py-3.5 flex items-center justify-between">
+      {/* Floating Glassmorphism Header */}
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md px-4 sm:px-8 py-3.5 flex items-center justify-between transition-colors duration-300 ${
+          isDark
+            ? "bg-[#020202]/85 border-b border-white/10"
+            : "bg-white/90 border-b border-slate-200 shadow-xs"
+        }`}
+      >
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 shadow-sm">
+          <div className="w-9 h-9 rounded-lg bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-500 shadow-sm">
             <BrainCircuit className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-sm font-black tracking-wider text-white font-mono">
+            <span
+              className={`text-sm font-black tracking-wider font-mono ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}
+            >
               KNOWLEDGE CONTINUITY
             </span>
-            <span className="hidden sm:inline-block ml-2 text-[10px] font-mono text-teal-400/90 tracking-widest uppercase">
+            <span className="hidden sm:inline-block ml-2 text-[10px] font-mono text-teal-500 tracking-widest uppercase">
               // VERIFIED HANDOVER
             </span>
           </div>
         </div>
 
         {/* Center Nav Links */}
-        <nav className="hidden lg:flex items-center gap-8 text-xs font-mono tracking-wider text-neutral-400">
-          <a href="#services" className="hover:text-white transition">
+        <nav
+          className={`hidden lg:flex items-center gap-8 text-xs font-mono tracking-wider transition-colors ${
+            isDark ? "text-neutral-400" : "text-slate-600"
+          }`}
+        >
+          <a href="#services" className="hover:text-teal-500 transition">
             SERVICES
           </a>
-          <a href="#case-studies" className="hover:text-white transition">
+          <a href="#case-studies" className="hover:text-teal-500 transition">
             CASE STUDIES
           </a>
-          <a href="#tech-stack" className="hover:text-white transition">
+          <a href="#tech-stack" className="hover:text-teal-500 transition">
             TECH STACK
           </a>
-          <a href="#metrics" className="hover:text-white transition">
+          <a href="#metrics" className="hover:text-teal-500 transition">
             METRICS
           </a>
-          <a href="#roles" className="hover:text-white transition">
+          <a href="#roles" className="hover:text-teal-500 transition">
             DEMO ROLES
           </a>
-          <a href="#faq" className="hover:text-white transition">
+          <a href="#faq" className="hover:text-teal-500 transition">
             FAQ
           </a>
         </nav>
 
-        {/* Right CTA */}
-        <div className="flex items-center gap-3">
+        {/* Right CTA & Theme Toggle */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Light / Dark Mode Toggle */}
+          <ThemeToggle />
+
           <a
             href="http://127.0.0.1:8000/docs"
             target="_blank"
             rel="noreferrer"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono text-neutral-400 hover:text-white border border-white/10 hover:border-white/20 rounded-lg transition"
+            className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono rounded-lg border transition ${
+              isDark
+                ? "text-neutral-400 hover:text-white border-white/10 hover:border-white/20"
+                : "text-slate-600 hover:text-slate-900 border-slate-200 hover:border-slate-300 bg-white"
+            }`}
           >
             <Terminal className="w-3.5 h-3.5" />
             <span>API Docs</span>
           </a>
           <button
             onClick={onEnterApp}
-            className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-neutral-200 text-black text-xs font-bold rounded-lg transition cursor-pointer shadow-sm active:scale-95"
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition cursor-pointer shadow-sm active:scale-95 ${
+              isDark
+                ? "bg-white hover:bg-neutral-200 text-black"
+                : "bg-slate-900 hover:bg-slate-800 text-white"
+            }`}
           >
             <span>Enter Console</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -139,21 +175,41 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
         {/* ========================================================================= */}
         <section className="relative px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto pt-12 pb-24 text-center">
           {/* Top Pill Announcement */}
-          <div className="inline-flex items-center gap-2.5 px-3.5 py-1 rounded-md bg-white/[0.04] border border-white/10 text-xs font-mono text-neutral-300 mb-8 backdrop-blur-sm">
-            <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+          <div
+            className={`inline-flex items-center gap-2.5 px-3.5 py-1 rounded-md text-xs font-mono mb-8 backdrop-blur-sm border ${
+              isDark
+                ? "bg-white/[0.04] border-white/10 text-neutral-300"
+                : "bg-white/80 border-slate-200 text-slate-700 shadow-2xs"
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
             <span>We help automate your engineering handover processes</span>
           </div>
 
-          {/* Giant Title (Quantum Agency Visual Style) */}
-          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight text-white uppercase font-sans mb-6">
+          {/* Giant Title */}
+          <h1
+            className={`text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight uppercase font-sans mb-6 ${
+              isDark ? "text-white" : "text-slate-900"
+            }`}
+          >
             KNOWLEDGE <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white via-neutral-200 to-neutral-500">
+            <span
+              className={`text-transparent bg-clip-text bg-gradient-to-b ${
+                isDark
+                  ? "from-white via-neutral-200 to-neutral-500"
+                  : "from-slate-950 via-slate-800 to-slate-500"
+              }`}
+            >
               CONTINUITY
             </span>
           </h1>
 
           {/* Subtitle */}
-          <p className="max-w-3xl mx-auto text-base sm:text-lg md:text-xl text-neutral-400 font-light leading-relaxed mb-10">
+          <p
+            className={`max-w-3xl mx-auto text-base sm:text-lg md:text-xl font-light leading-relaxed mb-10 ${
+              isDark ? "text-neutral-400" : "text-slate-600"
+            }`}
+          >
             Trusted evidence-linked platform. We leverage Multimodal LLMs, Exact
             Coordinate Extraction, and Cryptographic Audit Trails to maximize your
             engineering data’s potential. Extract verified models, optimize
@@ -165,25 +221,37 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={onEnterApp}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 bg-white hover:bg-neutral-200 text-black text-sm font-bold rounded-lg transition cursor-pointer shadow-md active:scale-95"
+              className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-bold rounded-lg transition cursor-pointer shadow-md active:scale-95 ${
+                isDark
+                  ? "bg-white hover:bg-neutral-200 text-black"
+                  : "bg-teal-600 hover:bg-teal-700 text-white"
+              }`}
             >
               <span>Launch Knowledge Console</span>
               <ArrowRight className="w-4 h-4" />
             </button>
             <a
               href="#case-studies"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 bg-neutral-900/90 hover:bg-neutral-800 text-white text-sm font-semibold rounded-lg border border-white/15 transition cursor-pointer backdrop-blur-sm"
+              className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold rounded-lg border transition cursor-pointer backdrop-blur-sm ${
+                isDark
+                  ? "bg-neutral-900/90 hover:bg-neutral-800 text-white border-white/15"
+                  : "bg-white hover:bg-slate-50 text-slate-800 border-slate-300 shadow-xs"
+              }`}
             >
               <span>Explore Case Studies</span>
               <ArrowDown className="w-4 h-4 text-neutral-400" />
             </a>
           </div>
 
-          {/* 3D Spatial Indicator / Rays Accent */}
-          <div className="mt-16 pt-8 border-t border-white/10 flex flex-wrap items-center justify-center gap-6 sm:gap-12 text-xs font-mono text-neutral-500">
+          {/* 3D Spatial Indicator */}
+          <div
+            className={`mt-16 pt-8 border-t flex flex-wrap items-center justify-center gap-6 sm:gap-12 text-xs font-mono ${
+              isDark ? "border-white/10 text-neutral-500" : "border-slate-200 text-slate-500"
+            }`}
+          >
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
-              <span>3D KNOWLEDGE TOPOLOGY ACTIVE</span>
+              <span>3D KNOWLEDGE NEXUS ACTIVE</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
@@ -199,9 +267,19 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
         {/* ========================================================================= */}
         {/* PARTNER & ARCHITECTURE STANDARDS MARQUEE                                */}
         {/* ========================================================================= */}
-        <section className="border-y border-white/10 bg-[#050505]/80 py-8 px-4 sm:px-6">
+        <section
+          className={`border-y py-8 px-4 sm:px-6 transition-colors ${
+            isDark
+              ? "border-white/10 bg-[#050505]/80"
+              : "border-slate-200 bg-slate-100/90"
+          }`}
+        >
           <div className="max-w-6xl mx-auto">
-            <p className="text-center text-xs font-mono uppercase tracking-widest text-neutral-500 mb-6">
+            <p
+              className={`text-center text-xs font-mono uppercase tracking-widest mb-6 ${
+                isDark ? "text-neutral-500" : "text-slate-500"
+              }`}
+            >
               ENGINEERED FOR ENTERPRISE ARCHITECTURE &amp; REGULATED SYSTEMS
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 text-center">
@@ -215,12 +293,24 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
               ].map((tech, idx) => (
                 <div
                   key={idx}
-                  className="p-3 rounded-lg bg-neutral-900/50 border border-white/5 flex flex-col items-center justify-center"
+                  className={`p-3 rounded-lg border flex flex-col items-center justify-center transition ${
+                    isDark
+                      ? "bg-neutral-900/50 border-white/5"
+                      : "bg-white border-slate-200 shadow-2xs"
+                  }`}
                 >
-                  <span className="text-sm font-bold text-neutral-200">
+                  <span
+                    className={`text-sm font-bold ${
+                      isDark ? "text-neutral-200" : "text-slate-800"
+                    }`}
+                  >
                     {tech.name}
                   </span>
-                  <span className="text-[10px] font-mono text-neutral-500">
+                  <span
+                    className={`text-[10px] font-mono ${
+                      isDark ? "text-neutral-500" : "text-slate-500"
+                    }`}
+                  >
                     {tech.sub}
                   </span>
                 </div>
@@ -234,16 +324,26 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
         {/* ========================================================================= */}
         <section
           id="services"
-          className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b border-white/10"
+          className={`px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b ${
+            isDark ? "border-white/10" : "border-slate-200"
+          }`}
         >
           <div className="mb-14">
-            <span className="text-xs font-mono uppercase tracking-widest text-teal-400">
+            <span className="text-xs font-mono uppercase tracking-widest text-teal-500 font-bold">
               OUR SERVICES
             </span>
-            <h2 className="text-3xl sm:text-5xl font-black text-white mt-2 tracking-tight">
+            <h2
+              className={`text-3xl sm:text-5xl font-black mt-2 tracking-tight ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}
+            >
               What we offer
             </h2>
-            <p className="text-neutral-400 max-w-2xl mt-3 text-sm sm:text-base leading-relaxed">
+            <p
+              className={`max-w-2xl mt-3 text-sm sm:text-base leading-relaxed ${
+                isDark ? "text-neutral-400" : "text-slate-600"
+              }`}
+            >
               Transform unorganized documentation, pull requests, and architecture
               specs into verified knowledge assets that continuously improve with
               engineer review.
@@ -285,24 +385,48 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
               return (
                 <div
                   key={service.num}
-                  className="group relative p-7 sm:p-8 rounded-xl bg-neutral-900/60 border border-white/10 hover:border-teal-500/40 transition duration-300 backdrop-blur-sm"
+                  className={`group relative p-7 sm:p-8 rounded-xl border transition duration-300 backdrop-blur-sm ${
+                    isDark
+                      ? "bg-neutral-900/60 border-white/10 hover:border-teal-500/40"
+                      : "bg-white border-slate-200 hover:border-teal-500/50 shadow-xs"
+                  }`}
                 >
                   <div className="flex items-center justify-between mb-6">
-                    <span className="text-xs font-mono font-bold text-neutral-500 group-hover:text-teal-400 transition">
+                    <span
+                      className={`text-xs font-mono font-bold transition ${
+                        isDark ? "text-neutral-500 group-hover:text-teal-400" : "text-slate-400 group-hover:text-teal-600"
+                      }`}
+                    >
                       {service.num}
                     </span>
-                    <div className="w-10 h-10 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-center text-teal-400 group-hover:bg-teal-500/10 transition">
+                    <div
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center text-teal-500 transition ${
+                        isDark ? "bg-white/[0.04] border border-white/10" : "bg-teal-50 border border-teal-200"
+                      }`}
+                    >
                       <Icon className="w-5 h-5" />
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-2.5">
+                  <h3
+                    className={`text-xl font-bold mb-2.5 ${
+                      isDark ? "text-white" : "text-slate-900"
+                    }`}
+                  >
                     {service.title}
                   </h3>
-                  <p className="text-neutral-400 text-sm leading-relaxed mb-6">
+                  <p
+                    className={`text-sm leading-relaxed mb-6 ${
+                      isDark ? "text-neutral-400" : "text-slate-600"
+                    }`}
+                  >
                     {service.desc}
                   </p>
-                  <div className="pt-4 border-t border-white/5 flex items-center gap-2 text-xs font-mono text-teal-400/90">
-                    <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
+                  <div
+                    className={`pt-4 border-t flex items-center gap-2 text-xs font-mono text-teal-500 ${
+                      isDark ? "border-white/5" : "border-slate-100"
+                    }`}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
                     <span>{service.highlight}</span>
                   </div>
                 </div>
@@ -316,16 +440,26 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
         {/* ========================================================================= */}
         <section
           id="case-studies"
-          className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b border-white/10"
+          className={`px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b ${
+            isDark ? "border-white/10" : "border-slate-200"
+          }`}
         >
           <div className="mb-14">
-            <span className="text-xs font-mono uppercase tracking-widest text-teal-400">
+            <span className="text-xs font-mono uppercase tracking-widest text-teal-500 font-bold">
               USE CASES
             </span>
-            <h2 className="text-3xl sm:text-5xl font-black text-white mt-2 tracking-tight">
+            <h2
+              className={`text-3xl sm:text-5xl font-black mt-2 tracking-tight ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}
+            >
               Case studies
             </h2>
-            <p className="text-neutral-400 max-w-2xl mt-3 text-sm sm:text-base leading-relaxed">
+            <p
+              className={`max-w-2xl mt-3 text-sm sm:text-base leading-relaxed ${
+                isDark ? "text-neutral-400" : "text-slate-600"
+              }`}
+            >
               What our platform delivered across real-world enterprise engineering sprints.
             </p>
           </div>
@@ -340,7 +474,6 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
                 stats: "54 Extracted Facts • 66% Readiness",
                 summary:
                   "Core distributed event processing engine, analytical datastore migration, and payment gateway infrastructure.",
-                status: "Ready for Inspection",
               },
               {
                 num: "02",
@@ -350,7 +483,6 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
                 stats: "38 Verified Decisions • 82% Readiness",
                 summary:
                   "Real-time event streaming pipeline handover with verified schema evolution and zero message loss.",
-                status: "Production Verified",
               },
               {
                 num: "03",
@@ -360,7 +492,6 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
                 stats: "46 Audit Spans • 91% Readiness",
                 summary:
                   "Strict evidence anchoring with cryptographic tamper-evident review logs for financial examiners.",
-                status: "Compliant & Signed",
               },
               {
                 num: "04",
@@ -370,37 +501,66 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
                 stats: "29 Cloud Runbooks • 75% Readiness",
                 summary:
                   "Automated IAM credential rotation, ingress topologies, and cluster failover procedures.",
-                status: "Handover Complete",
               },
             ].map((cs) => (
               <div
                 key={cs.num}
-                className="p-6 rounded-xl bg-neutral-900/60 border border-white/10 hover:border-white/20 transition flex flex-col justify-between"
+                className={`p-6 rounded-xl border transition flex flex-col justify-between ${
+                  isDark
+                    ? "bg-neutral-900/60 border-white/10 hover:border-white/20"
+                    : "bg-white border-slate-200 hover:border-slate-300 shadow-xs"
+                }`}
               >
                 <div>
                   <div className="flex items-center justify-between text-xs font-mono mb-4">
-                    <span className="text-teal-400 font-bold">{cs.num}</span>
-                    <span className="text-[10px] text-neutral-400 px-2 py-0.5 rounded bg-white/[0.04] border border-white/10">
+                    <span className="text-teal-500 font-bold">{cs.num}</span>
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded border ${
+                        isDark
+                          ? "text-neutral-400 bg-white/[0.04] border-white/10"
+                          : "text-slate-600 bg-slate-100 border-slate-200"
+                      }`}
+                    >
                       {cs.badge}
                     </span>
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-1">
+                  <h3
+                    className={`text-lg font-bold mb-1 ${
+                      isDark ? "text-white" : "text-slate-900"
+                    }`}
+                  >
                     {cs.title}
                   </h3>
-                  <div className="text-xs font-mono text-neutral-400 mb-3">
+                  <div
+                    className={`text-xs font-mono mb-3 ${
+                      isDark ? "text-neutral-400" : "text-slate-500"
+                    }`}
+                  >
                     {cs.category}
                   </div>
-                  <p className="text-neutral-400 text-xs leading-relaxed mb-4">
+                  <p
+                    className={`text-xs leading-relaxed mb-4 ${
+                      isDark ? "text-neutral-400" : "text-slate-600"
+                    }`}
+                  >
                     {cs.summary}
                   </p>
                 </div>
-                <div className="pt-4 border-t border-white/5">
-                  <div className="text-[11px] font-mono text-teal-400/90 mb-3">
+                <div
+                  className={`pt-4 border-t ${
+                    isDark ? "border-white/5" : "border-slate-100"
+                  }`}
+                >
+                  <div className="text-[11px] font-mono text-teal-500 font-semibold mb-3">
                     {cs.stats}
                   </div>
                   <button
                     onClick={onEnterApp}
-                    className="w-full flex items-center justify-center gap-1.5 py-2 text-xs font-bold text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition cursor-pointer"
+                    className={`w-full flex items-center justify-center gap-1.5 py-2 text-xs font-bold rounded-lg transition cursor-pointer border ${
+                      isDark
+                        ? "text-white bg-white/5 hover:bg-white/10 border-white/10"
+                        : "text-slate-800 bg-slate-100 hover:bg-slate-200 border-slate-200"
+                    }`}
                   >
                     <span>View Workspace</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -416,16 +576,26 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
         {/* ========================================================================= */}
         <section
           id="tech-stack"
-          className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b border-white/10"
+          className={`px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b ${
+            isDark ? "border-white/10" : "border-slate-200"
+          }`}
         >
           <div className="mb-14">
-            <span className="text-xs font-mono uppercase tracking-widest text-teal-400">
+            <span className="text-xs font-mono uppercase tracking-widest text-teal-500 font-bold">
               TECH STACK
             </span>
-            <h2 className="text-3xl sm:text-5xl font-black text-white mt-2 tracking-tight">
+            <h2
+              className={`text-3xl sm:text-5xl font-black mt-2 tracking-tight ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}
+            >
               Technology we use
             </h2>
-            <p className="text-neutral-400 max-w-2xl mt-3 text-sm sm:text-base leading-relaxed">
+            <p
+              className={`max-w-2xl mt-3 text-sm sm:text-base leading-relaxed ${
+                isDark ? "text-neutral-400" : "text-slate-600"
+              }`}
+            >
               We are transparent about the cutting-edge tools powering our top-tier
               products and services.
             </p>
@@ -466,24 +636,44 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
               return (
                 <div
                   key={t.num}
-                  className="p-6 rounded-xl bg-neutral-900/60 border border-white/10 hover:border-teal-500/30 transition flex flex-col justify-between"
+                  className={`p-6 rounded-xl border transition flex flex-col justify-between ${
+                    isDark
+                      ? "bg-neutral-900/60 border-white/10 hover:border-teal-500/30"
+                      : "bg-white border-slate-200 hover:border-teal-500/40 shadow-xs"
+                  }`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-xs font-mono font-bold text-neutral-500">
+                      <span
+                        className={`text-xs font-mono font-bold ${
+                          isDark ? "text-neutral-500" : "text-slate-400"
+                        }`}
+                      >
                         {t.num}
                       </span>
-                      <Icon className="w-5 h-5 text-teal-400" />
+                      <Icon className="w-5 h-5 text-teal-500" />
                     </div>
-                    <h3 className="text-base font-bold text-white mb-2">
+                    <h3
+                      className={`text-base font-bold mb-2 ${
+                        isDark ? "text-white" : "text-slate-900"
+                      }`}
+                    >
                       {t.title}
                     </h3>
-                    <p className="text-neutral-400 text-xs leading-relaxed mb-4">
+                    <p
+                      className={`text-xs leading-relaxed mb-4 ${
+                        isDark ? "text-neutral-400" : "text-slate-600"
+                      }`}
+                    >
                       {t.desc}
                     </p>
                   </div>
-                  <div className="pt-3 border-t border-white/5">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-teal-400/80">
+                  <div
+                    className={`pt-3 border-t ${
+                      isDark ? "border-white/5" : "border-slate-100"
+                    }`}
+                  >
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-teal-500 font-semibold">
                       // {t.tag}
                     </span>
                   </div>
@@ -498,13 +688,23 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
         {/* ========================================================================= */}
         <section
           id="metrics"
-          className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b border-white/10"
+          className={`px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b ${
+            isDark ? "border-white/10" : "border-slate-200"
+          }`}
         >
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+            <h2
+              className={`text-3xl sm:text-5xl font-black tracking-tight ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}
+            >
               10x your Handover Output. Save Hours in Engineering Transitions.
             </h2>
-            <p className="text-neutral-400 text-sm sm:text-base mt-4">
+            <p
+              className={`text-sm sm:text-base mt-4 ${
+                isDark ? "text-neutral-400" : "text-slate-600"
+              }`}
+            >
               Real-world engineering impact measured across production sprint handovers.
             </p>
           </div>
@@ -534,17 +734,33 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
             ].map((m, i) => (
               <div
                 key={i}
-                className="p-7 rounded-xl bg-neutral-900/60 border border-white/10 flex flex-col justify-between"
+                className={`p-7 rounded-xl border flex flex-col justify-between ${
+                  isDark
+                    ? "bg-neutral-900/60 border-white/10"
+                    : "bg-white border-slate-200 shadow-xs"
+                }`}
               >
                 <div>
-                  <div className="text-4xl sm:text-5xl font-black text-white mb-3 tracking-tight font-mono">
+                  <div
+                    className={`text-4xl sm:text-5xl font-black mb-3 tracking-tight font-mono ${
+                      isDark ? "text-white" : "text-slate-900"
+                    }`}
+                  >
                     {m.value}
                   </div>
-                  <h3 className="text-sm font-bold text-neutral-200 mb-2">
+                  <h3
+                    className={`text-sm font-bold mb-2 ${
+                      isDark ? "text-neutral-200" : "text-slate-800"
+                    }`}
+                  >
                     {m.label}
                   </h3>
                 </div>
-                <p className="text-neutral-400 text-xs leading-relaxed mt-4 pt-4 border-t border-white/5">
+                <p
+                  className={`text-xs leading-relaxed mt-4 pt-4 border-t ${
+                    isDark ? "text-neutral-400 border-white/5" : "text-slate-600 border-slate-100"
+                  }`}
+                >
                   {m.sub}
                 </p>
               </div>
@@ -557,16 +773,26 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
         {/* ========================================================================= */}
         <section
           id="why-us"
-          className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b border-white/10"
+          className={`px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b ${
+            isDark ? "border-white/10" : "border-slate-200"
+          }`}
         >
           <div className="mb-14">
-            <span className="text-xs font-mono uppercase tracking-widest text-teal-400">
+            <span className="text-xs font-mono uppercase tracking-widest text-teal-500 font-bold">
               WHY CHOOSE US
             </span>
-            <h2 className="text-3xl sm:text-5xl font-black text-white mt-2 tracking-tight">
+            <h2
+              className={`text-3xl sm:text-5xl font-black mt-2 tracking-tight ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}
+            >
               We Deliver Verification That Works.
             </h2>
-            <p className="text-neutral-400 max-w-2xl mt-3 text-sm sm:text-base leading-relaxed">
+            <p
+              className={`max-w-2xl mt-3 text-sm sm:text-base leading-relaxed ${
+                isDark ? "text-neutral-400" : "text-slate-600"
+              }`}
+            >
               We combine cutting-edge multimodal AI with a pragmatic, human-in-the-loop
               review workflow to ensure your handover documentation translates into
               tangible uptime.
@@ -598,22 +824,40 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="p-8 rounded-xl bg-neutral-900/60 border border-white/10 flex flex-col justify-between"
+                className={`p-8 rounded-xl border flex flex-col justify-between ${
+                  isDark
+                    ? "bg-neutral-900/60 border-white/10"
+                    : "bg-white border-slate-200 shadow-xs"
+                }`}
               >
                 <div>
-                  <div className="text-xs font-mono text-teal-400 mb-2">
+                  <div className="text-xs font-mono text-teal-500 mb-2 font-bold">
                     // 0{idx + 1} PRINCIPLE
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-2.5">
+                  <h3
+                    className={`text-xl font-bold mb-2.5 ${
+                      isDark ? "text-white" : "text-slate-900"
+                    }`}
+                  >
                     {item.title}
                   </h3>
-                  <p className="text-neutral-400 text-sm leading-relaxed mb-6">
+                  <p
+                    className={`text-sm leading-relaxed mb-6 ${
+                      isDark ? "text-neutral-400" : "text-slate-600"
+                    }`}
+                  >
                     {item.desc}
                   </p>
                 </div>
-                <div className="pt-4 border-t border-white/5 flex items-center justify-between text-xs font-mono">
-                  <span className="text-neutral-500">Benchmark:</span>
-                  <span className="text-teal-400 font-bold">{item.metric}</span>
+                <div
+                  className={`pt-4 border-t flex items-center justify-between text-xs font-mono ${
+                    isDark ? "border-white/5" : "border-slate-100"
+                  }`}
+                >
+                  <span className={isDark ? "text-neutral-500" : "text-slate-500"}>
+                    Benchmark:
+                  </span>
+                  <span className="text-teal-500 font-bold">{item.metric}</span>
                 </div>
               </div>
             ))}
@@ -625,16 +869,26 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
         {/* ========================================================================= */}
         <section
           id="roles"
-          className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b border-white/10"
+          className={`px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24 border-b ${
+            isDark ? "border-white/10" : "border-slate-200"
+          }`}
         >
           <div className="text-center max-w-3xl mx-auto mb-14">
-            <span className="text-xs font-mono uppercase tracking-widest text-teal-400">
+            <span className="text-xs font-mono uppercase tracking-widest text-teal-500 font-bold">
               ACCESS &amp; ROLES
             </span>
-            <h2 className="text-3xl sm:text-5xl font-black text-white mt-2 tracking-tight">
+            <h2
+              className={`text-3xl sm:text-5xl font-black mt-2 tracking-tight ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}
+            >
               Role-Based Governance Built In
             </h2>
-            <p className="text-neutral-400 text-sm sm:text-base mt-3">
+            <p
+              className={`text-sm sm:text-base mt-3 ${
+                isDark ? "text-neutral-400" : "text-slate-600"
+              }`}
+            >
               Experience the console through any of our 4 pre-configured personas with
               pre-seeded Project Apollo data.
             </p>
@@ -673,30 +927,46 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
             ].map((persona) => (
               <div
                 key={persona.id}
-                className="p-6 rounded-xl bg-neutral-900/60 border border-white/10 flex flex-col justify-between"
+                className={`p-6 rounded-xl border flex flex-col justify-between ${
+                  isDark
+                    ? "bg-neutral-900/60 border-white/10"
+                    : "bg-white border-slate-200 shadow-xs"
+                }`}
               >
                 <div>
-                  <div className="w-9 h-9 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 mb-4">
+                  <div className="w-9 h-9 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-500 mb-4">
                     <Users className="w-4 h-4" />
                   </div>
-                  <h3 className="text-base font-bold text-white mb-1.5">
+                  <h3
+                    className={`text-base font-bold mb-1.5 ${
+                      isDark ? "text-white" : "text-slate-900"
+                    }`}
+                  >
                     {persona.title}
                   </h3>
-                  <p className="text-neutral-400 text-xs leading-relaxed mb-6">
+                  <p
+                    className={`text-xs leading-relaxed mb-6 ${
+                      isDark ? "text-neutral-400" : "text-slate-600"
+                    }`}
+                  >
                     {persona.desc}
                   </p>
                 </div>
                 <button
                   onClick={() => handleRoleClick(persona.role, persona.id)}
                   disabled={isLoggingIn === persona.id}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xs font-bold rounded-lg transition cursor-pointer active:scale-95 disabled:opacity-50"
+                  className={`w-full flex items-center justify-center gap-2 py-2.5 text-xs font-bold rounded-lg transition cursor-pointer active:scale-95 disabled:opacity-50 border ${
+                    isDark
+                      ? "bg-white/10 hover:bg-white/20 border-white/15 text-white"
+                      : "bg-teal-600 hover:bg-teal-700 text-white border-teal-700 shadow-xs"
+                  }`}
                 >
                   {isLoggingIn === persona.id ? (
                     <span>Authenticating...</span>
                   ) : (
                     <>
                       <span>{persona.action}</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-neutral-400" />
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </>
                   )}
                 </button>
@@ -710,16 +980,26 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
         {/* ========================================================================= */}
         <section
           id="faq"
-          className="px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto py-24 border-b border-white/10"
+          className={`px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto py-24 border-b ${
+            isDark ? "border-white/10" : "border-slate-200"
+          }`}
         >
           <div className="mb-14">
-            <span className="text-xs font-mono uppercase tracking-widest text-teal-400">
+            <span className="text-xs font-mono uppercase tracking-widest text-teal-500 font-bold">
               FAQS
             </span>
-            <h2 className="text-3xl sm:text-5xl font-black text-white mt-2 tracking-tight">
+            <h2
+              className={`text-3xl sm:text-5xl font-black mt-2 tracking-tight ${
+                isDark ? "text-white" : "text-slate-900"
+              }`}
+            >
               Common Questions Answered
             </h2>
-            <p className="text-neutral-400 text-sm sm:text-base mt-3">
+            <p
+              className={`text-sm sm:text-base mt-3 ${
+                isDark ? "text-neutral-400" : "text-slate-600"
+              }`}
+            >
               Key technical details on evidence linking, RBAC enforcement, and data privacy.
             </p>
           </div>
@@ -755,23 +1035,43 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
               return (
                 <div
                   key={idx}
-                  className="rounded-xl bg-neutral-900/60 border border-white/10 overflow-hidden transition"
+                  className={`rounded-xl border overflow-hidden transition ${
+                    isDark
+                      ? "bg-neutral-900/60 border-white/10"
+                      : "bg-white border-slate-200 shadow-2xs"
+                  }`}
                 >
                   <button
                     onClick={() => toggleFaq(idx)}
-                    className="w-full p-5 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-white/[0.02] transition"
+                    className={`w-full p-5 text-left flex items-center justify-between gap-4 cursor-pointer transition ${
+                      isDark ? "hover:bg-white/[0.02]" : "hover:bg-slate-50"
+                    }`}
                   >
-                    <span className="text-sm sm:text-base font-semibold text-white">
+                    <span
+                      className={`text-sm sm:text-base font-semibold ${
+                        isDark ? "text-white" : "text-slate-900"
+                      }`}
+                    >
                       {faq.q}
                     </span>
                     {isOpen ? (
-                      <ChevronUp className="w-4 h-4 text-teal-400 shrink-0" />
+                      <ChevronUp className="w-4 h-4 text-teal-500 shrink-0" />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-neutral-400 shrink-0" />
+                      <ChevronDown
+                        className={`w-4 h-4 shrink-0 ${
+                          isDark ? "text-neutral-400" : "text-slate-400"
+                        }`}
+                      />
                     )}
                   </button>
                   {isOpen && (
-                    <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-neutral-400 leading-relaxed border-t border-white/5">
+                    <div
+                      className={`px-5 pb-5 pt-1 text-xs sm:text-sm leading-relaxed border-t ${
+                        isDark
+                          ? "text-neutral-400 border-white/5"
+                          : "text-slate-600 border-slate-100"
+                      }`}
+                    >
                       {faq.a}
                     </div>
                   )}
@@ -782,11 +1082,16 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
         </section>
 
         {/* ========================================================================= */}
-        {/* CALL TO ACTION BANNER (LET'S TALK / LAUNCH CONSOLE)                       */}
+        {/* CALL TO ACTION BANNER                                                     */}
         {/* ========================================================================= */}
         <section className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto py-24">
-          <div className="relative rounded-2xl bg-gradient-to-b from-neutral-900/90 to-[#080808] border border-white/15 p-8 sm:p-14 text-center overflow-hidden shadow-2xl backdrop-blur-md">
-            {/* Halftone subtle glow */}
+          <div
+            className={`relative rounded-2xl border p-8 sm:p-14 text-center overflow-hidden shadow-2xl backdrop-blur-md ${
+              isDark
+                ? "bg-gradient-to-b from-neutral-900/90 to-[#080808] border-white/15 text-white"
+                : "bg-gradient-to-b from-slate-900 to-slate-950 border-slate-800 text-white"
+            }`}
+          >
             <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
             <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-sky-500/10 blur-3xl pointer-events-none" />
 
@@ -797,7 +1102,7 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
               <h2 className="text-3xl sm:text-5xl font-black text-white mt-2 mb-4 tracking-tight">
                 Let&apos;s Build Unbreakable Continuity.
               </h2>
-              <p className="text-neutral-400 text-sm sm:text-base mb-8 leading-relaxed">
+              <p className="text-neutral-300 text-sm sm:text-base mb-8 leading-relaxed">
                 Eliminate tribal knowledge loss and onboard incoming engineers with
                 verifiable citations, automated dossiers, and zero guesswork.
               </p>
@@ -813,9 +1118,9 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
                   href="http://127.0.0.1:8000/docs"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3.5 bg-white/5 hover:bg-white/10 border border-white/15 text-white text-sm font-semibold rounded-lg transition"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white text-sm font-semibold rounded-lg transition"
                 >
-                  <Terminal className="w-4 h-4 text-neutral-400" />
+                  <Terminal className="w-4 h-4 text-neutral-300" />
                   <span>Interactive API Docs</span>
                 </a>
               </div>
@@ -825,48 +1130,84 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
       </main>
 
       {/* ========================================================================= */}
-      {/* FOOTER (Quantum Agency Legal & Architecture Links)                         */}
+      {/* FOOTER                                                                    */}
       {/* ========================================================================= */}
-      <footer className="border-t border-white/10 bg-[#020202] py-12 px-4 sm:px-8 relative z-10 text-xs font-mono text-neutral-500">
+      <footer
+        className={`border-t py-12 px-4 sm:px-8 relative z-10 text-xs font-mono transition-colors ${
+          isDark
+            ? "border-white/10 bg-[#020202] text-neutral-500"
+            : "border-slate-200 bg-white text-slate-500 shadow-2xs"
+        }`}
+      >
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-md bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
+            <div className="w-7 h-7 rounded-md bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-500">
               <BrainCircuit className="w-4 h-4" />
             </div>
             <div>
-              <span className="font-bold text-white tracking-wider">
+              <span
+                className={`font-bold tracking-wider ${
+                  isDark ? "text-white" : "text-slate-900"
+                }`}
+              >
                 KNOWLEDGE CONTINUITY
               </span>
-              <p className="text-[10px] text-neutral-500 mt-0.5">
+              <p
+                className={`text-[10px] mt-0.5 ${
+                  isDark ? "text-neutral-500" : "text-slate-400"
+                }`}
+              >
                 Evidence-Linked Project Knowledge Handover Platform
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 text-neutral-400">
+          <div
+            className={`flex flex-wrap items-center justify-center gap-6 ${
+              isDark ? "text-neutral-400" : "text-slate-600"
+            }`}
+          >
             <button
               onClick={onEnterApp}
-              className="hover:text-white transition cursor-pointer"
+              className={`transition cursor-pointer ${
+                isDark ? "hover:text-white" : "hover:text-slate-900"
+              }`}
             >
               Console
             </button>
-            <Link href="/privacy" className="hover:text-white transition">
+            <Link
+              href="/privacy"
+              className={`transition ${
+                isDark ? "hover:text-white" : "hover:text-slate-900"
+              }`}
+            >
               Privacy Policy
             </Link>
-            <Link href="/terms" className="hover:text-white transition">
+            <Link
+              href="/terms"
+              className={`transition ${
+                isDark ? "hover:text-white" : "hover:text-slate-900"
+              }`}
+            >
               Terms of Service
             </Link>
             <a
               href="http://127.0.0.1:8000/docs"
               target="_blank"
               rel="noreferrer"
-              className="hover:text-white transition"
+              className={`transition ${
+                isDark ? "hover:text-white" : "hover:text-slate-900"
+              }`}
             >
               API Reference
             </a>
           </div>
 
-          <div className="text-center md:text-right text-[11px] text-neutral-600">
+          <div
+            className={`text-center md:text-right text-[11px] ${
+              isDark ? "text-neutral-600" : "text-slate-400"
+            }`}
+          >
             &copy; {new Date().getFullYear()} Knowledge Continuity. All rights reserved.
           </div>
         </div>
