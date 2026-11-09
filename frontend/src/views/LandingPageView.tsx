@@ -183,7 +183,7 @@ export function LandingPageView({ onEnterApp, onSelectRole }: LandingPageViewPro
           <div className="mt-16 pt-8 border-t border-white/10 flex flex-wrap items-center justify-center gap-6 sm:gap-12 text-xs font-mono text-neutral-500">
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-teal-400" />
-              <span>ISOMETRIC 3D NETWORK ACTIVE</span>
+              <span>3D KNOWLEDGE TOPOLOGY ACTIVE</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />

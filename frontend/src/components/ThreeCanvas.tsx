@@ -12,136 +12,115 @@ export function ThreeCanvas() {
 
     // 1. Scene setup
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x020202, 0.0016);
+    const bgColor = 0x020202;
+    scene.fog = new THREE.FogExp2(bgColor, 0.0015);
 
-    // 2. Camera setup
+    // 2. Camera setup with cinematic depth
     const camera = new THREE.PerspectiveCamera(
       55,
       window.innerWidth / window.innerHeight,
       1,
-      1500
+      2000
     );
-    camera.position.z = 420;
+    camera.position.set(0, 70, 360);
+    camera.lookAt(0, -20, 0);
 
-    // 3. Renderer setup
+    // 3. WebGL Renderer
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x000000, 0);
+    renderer.setClearColor(bgColor, 0);
     container.appendChild(renderer.domElement);
 
-    // 4. Create Quantum-style Central Isometric 3D Knowledge Cube
-    const cubeGroup = new THREE.Group();
-    scene.add(cubeGroup);
+    // 4. Undulating 3D Knowledge Data Wavefield (Continuous Mathematical Topology)
+    const gridX = 72;
+    const gridY = 52;
+    const planeWidth = 1400;
+    const planeDepth = 1050;
+    const waveGeo = new THREE.PlaneGeometry(planeWidth, planeDepth, gridX, gridY);
+    waveGeo.rotateX(-Math.PI / 2.2);
 
-    // Outer wireframe cube
-    const outerBoxGeo = new THREE.BoxGeometry(110, 110, 110);
-    const outerEdges = new THREE.EdgesGeometry(outerBoxGeo);
-    const outerLineMat = new THREE.LineBasicMaterial({
-      color: 0x14b8a6, // Teal
+    const vertexCount = (gridX + 1) * (gridY + 1);
+    const waveColors = new Float32Array(vertexCount * 3);
+    const origPositions = waveGeo.attributes.position.array.slice() as Float32Array;
+
+    // Circular glowing particle texture
+    const pCanvas = document.createElement("canvas");
+    pCanvas.width = 16;
+    pCanvas.height = 16;
+    const pCtx = pCanvas.getContext("2d");
+    if (pCtx) {
+      const grad = pCtx.createRadialGradient(8, 8, 0, 8, 8, 8);
+      grad.addColorStop(0, "rgba(255, 255, 255, 1)");
+      grad.addColorStop(0.3, "rgba(45, 212, 191, 0.85)");
+      grad.addColorStop(0.7, "rgba(14, 165, 233, 0.35)");
+      grad.addColorStop(1, "rgba(14, 165, 233, 0)");
+      pCtx.fillStyle = grad;
+      pCtx.fillRect(0, 0, 16, 16);
+    }
+    const particleTexture = new THREE.CanvasTexture(pCanvas);
+
+    // Wave Points
+    waveGeo.setAttribute("color", new THREE.BufferAttribute(waveColors, 3));
+    const wavePointMat = new THREE.PointsMaterial({
+      size: 5.5,
+      map: particleTexture,
       transparent: true,
-      opacity: 0.75,
+      blending: THREE.AdditiveBlending,
+      vertexColors: true,
+      depthWrite: false,
     });
-    const outerCube = new THREE.LineSegments(outerEdges, outerLineMat);
-    cubeGroup.add(outerCube);
+    const wavePoints = new THREE.Points(waveGeo, wavePointMat);
+    wavePoints.position.set(0, -90, -120);
+    scene.add(wavePoints);
 
-    // Mid wireframe cube
-    const midBoxGeo = new THREE.BoxGeometry(80, 80, 80);
-    const midEdges = new THREE.EdgesGeometry(midBoxGeo);
-    const midLineMat = new THREE.LineBasicMaterial({
-      color: 0x38bdf8, // Cyan
-      transparent: true,
-      opacity: 0.55,
-    });
-    const midCube = new THREE.LineSegments(midEdges, midLineMat);
-    cubeGroup.add(midCube);
-
-    // Inner glowing core cube
-    const coreBoxGeo = new THREE.BoxGeometry(45, 45, 45);
-    const coreMat = new THREE.MeshBasicMaterial({
+    // Wave Wireframe Mesh (Subtle connecting lines between grid points)
+    const wireframeMat = new THREE.MeshBasicMaterial({
       color: 0x0f766e,
       wireframe: true,
       transparent: true,
-      opacity: 0.45,
+      opacity: 0.18,
+      blending: THREE.AdditiveBlending,
     });
-    const coreCube = new THREE.Mesh(coreBoxGeo, coreMat);
-    cubeGroup.add(coreCube);
+    const waveMesh = new THREE.Mesh(waveGeo, wireframeMat);
+    waveMesh.position.set(0, -90, -120);
+    scene.add(waveMesh);
 
-    // Orbital Rings
-    const ringGeo1 = new THREE.TorusGeometry(95, 0.8, 16, 100);
-    const ringMat1 = new THREE.MeshBasicMaterial({
-      color: 0x2dd4bf,
-      transparent: true,
-      opacity: 0.4,
-    });
-    const ring1 = new THREE.Mesh(ringGeo1, ringMat1);
-    ring1.rotation.x = Math.PI / 3;
-    cubeGroup.add(ring1);
+    // 5. Floating Knowledge Beacons (Upper Atmosphere Constellation)
+    const beaconCount = 75;
+    const beaconGeo = new THREE.BufferGeometry();
+    const beaconPos = new Float32Array(beaconCount * 3);
+    const beaconVels: { x: number; y: number; z: number }[] = [];
+    const beaconColors = new Float32Array(beaconCount * 3);
 
-    const ringGeo2 = new THREE.TorusGeometry(125, 0.6, 16, 100);
-    const ringMat2 = new THREE.MeshBasicMaterial({
-      color: 0x0ea5e9,
-      transparent: true,
-      opacity: 0.3,
-    });
-    const ring2 = new THREE.Mesh(ringGeo2, ringMat2);
-    ring2.rotation.y = Math.PI / 4;
-    cubeGroup.add(ring2);
+    const tealC = new THREE.Color(0x14b8a6);
+    const cyanC = new THREE.Color(0x38bdf8);
+    const emeraldC = new THREE.Color(0x10b981);
+    const whiteC = new THREE.Color(0xffffff);
+    const colorChoices = [tealC, cyanC, emeraldC, whiteC];
 
-    // Position cube group in the upper-center area
-    cubeGroup.position.set(0, 30, -50);
-
-    // 5. Ambient Knowledge Particles and Ray Network
-    const particleCount = 130;
-    const geometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(particleCount * 3);
-    const velocities: { x: number; y: number; z: number }[] = [];
-    const colors = new Float32Array(particleCount * 3);
-
-    const tealColor = new THREE.Color(0x0d9488);
-    const cyanColor = new THREE.Color(0x06b6d4);
-    const emeraldColor = new THREE.Color(0x10b981);
-    const whiteColor = new THREE.Color(0xffffff);
-
-    const palette = [tealColor, cyanColor, emeraldColor, whiteColor];
-
-    for (let i = 0; i < particleCount; i++) {
+    for (let i = 0; i < beaconCount; i++) {
       const i3 = i * 3;
-      positions[i3] = (Math.random() - 0.5) * 850;
-      positions[i3 + 1] = (Math.random() - 0.5) * 650;
-      positions[i3 + 2] = (Math.random() - 0.5) * 650;
+      beaconPos[i3] = (Math.random() - 0.5) * 800;
+      beaconPos[i3 + 1] = Math.random() * 260 - 20; // Float above the wavefield
+      beaconPos[i3 + 2] = (Math.random() - 0.5) * 600;
 
-      velocities.push({
-        x: (Math.random() - 0.5) * 0.3,
-        y: (Math.random() - 0.5) * 0.3,
-        z: (Math.random() - 0.5) * 0.3,
+      beaconVels.push({
+        x: (Math.random() - 0.5) * 0.22,
+        y: (Math.random() - 0.5) * 0.2,
+        z: (Math.random() - 0.5) * 0.22,
       });
 
-      const col = palette[Math.floor(Math.random() * palette.length)];
-      colors[i3] = col.r;
-      colors[i3 + 1] = col.g;
-      colors[i3 + 2] = col.b;
+      const chosenColor = colorChoices[Math.floor(Math.random() * colorChoices.length)];
+      beaconColors[i3] = chosenColor.r;
+      beaconColors[i3 + 1] = chosenColor.g;
+      beaconColors[i3 + 2] = chosenColor.b;
     }
 
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    beaconGeo.setAttribute("position", new THREE.BufferAttribute(beaconPos, 3));
+    beaconGeo.setAttribute("color", new THREE.BufferAttribute(beaconColors, 3));
 
-    // Particle texture
-    const canvas = document.createElement("canvas");
-    canvas.width = 16;
-    canvas.height = 16;
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      const gradient = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
-      gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
-      gradient.addColorStop(0.3, "rgba(45, 212, 191, 0.7)");
-      gradient.addColorStop(1, "rgba(13, 148, 136, 0)");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, 16, 16);
-    }
-    const particleTexture = new THREE.CanvasTexture(canvas);
-
-    const particleMaterial = new THREE.PointsMaterial({
+    const beaconMat = new THREE.PointsMaterial({
       size: 7,
       map: particleTexture,
       transparent: true,
@@ -149,29 +128,27 @@ export function ThreeCanvas() {
       vertexColors: true,
       depthWrite: false,
     });
+    const beacons = new THREE.Points(beaconGeo, beaconMat);
+    scene.add(beacons);
 
-    const particles = new THREE.Points(geometry, particleMaterial);
-    scene.add(particles);
+    // Dynamic Evidence Link Lines
+    const maxLinks = 120;
+    const linkPositions = new Float32Array(maxLinks * 6);
+    const linkColors = new Float32Array(maxLinks * 6);
+    const linkGeo = new THREE.BufferGeometry();
+    linkGeo.setAttribute("position", new THREE.BufferAttribute(linkPositions, 3));
+    linkGeo.setAttribute("color", new THREE.BufferAttribute(linkColors, 3));
 
-    // 6. Dynamic Connection Lines
-    const maxLines = 180;
-    const linePositions = new Float32Array(maxLines * 6);
-    const lineColors = new Float32Array(maxLines * 6);
-    const lineGeometry = new THREE.BufferGeometry();
-    lineGeometry.setAttribute("position", new THREE.BufferAttribute(linePositions, 3));
-    lineGeometry.setAttribute("color", new THREE.BufferAttribute(lineColors, 3));
-
-    const lineMaterial = new THREE.LineBasicMaterial({
+    const linkMat = new THREE.LineBasicMaterial({
       vertexColors: true,
       transparent: true,
       opacity: 0.28,
       blending: THREE.AdditiveBlending,
     });
+    const linksMesh = new THREE.LineSegments(linkGeo, linkMat);
+    scene.add(linksMesh);
 
-    const linesMesh = new THREE.LineSegments(lineGeometry, lineMaterial);
-    scene.add(linesMesh);
-
-    // 7. Interactive Parallax
+    // 6. Interactive Cursor and Scroll Parallax
     let mouseX = 0;
     let mouseY = 0;
     let targetX = 0;
@@ -180,8 +157,8 @@ export function ThreeCanvas() {
     let targetScrollY = 0;
 
     const onPointerMove = (e: MouseEvent) => {
-      mouseX = (e.clientX - window.innerWidth / 2) * 0.4;
-      mouseY = (e.clientY - window.innerHeight / 2) * 0.4;
+      mouseX = (e.clientX - window.innerWidth / 2) * 0.35;
+      mouseY = (e.clientY - window.innerHeight / 2) * 0.35;
     };
 
     const onScroll = () => {
@@ -198,124 +175,142 @@ export function ThreeCanvas() {
     };
     window.addEventListener("resize", onResize);
 
-    // 8. Animation Loop
+    // 7. Animation Loop
     let animationFrameId: number;
+    let clock = new THREE.Clock();
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
+      const time = clock.getElapsedTime();
 
-      // Mouse & Scroll Parallax
-      targetX += (mouseX - targetX) * 0.05;
-      targetY += (mouseY - targetY) * 0.05;
-      targetScrollY += (scrollY - targetScrollY) * 0.08;
+      // Smooth parallax tracking
+      targetX += (mouseX - targetX) * 0.04;
+      targetY += (mouseY - targetY) * 0.04;
+      targetScrollY += (scrollY - targetScrollY) * 0.06;
 
-      camera.position.x = targetX * 0.6;
-      camera.position.y = -targetY * 0.6;
-      camera.position.z = 420 + targetScrollY * 0.2;
+      camera.position.x = targetX * 0.5;
+      camera.position.y = 70 - targetY * 0.4;
+      camera.position.z = 360 + targetScrollY * 0.18;
+      camera.lookAt(targetX * 0.15, -20 - targetY * 0.15, 0);
 
-      // Rotate 3D Cube and Rings
-      cubeGroup.rotation.y += 0.005;
-      cubeGroup.rotation.x = Math.sin(Date.now() * 0.001) * 0.15 + (targetY * 0.001);
-      cubeGroup.rotation.z = Math.cos(Date.now() * 0.0008) * 0.1;
+      // --- Animate 3D Data Wavefield ---
+      const posAttr = waveGeo.attributes.position;
+      const posArray = posAttr.array as Float32Array;
+      const colArray = waveGeo.attributes.color.array as Float32Array;
 
-      midCube.rotation.y -= 0.008;
-      midCube.rotation.x -= 0.005;
-      coreCube.rotation.y += 0.012;
+      for (let i = 0; i < vertexCount; i++) {
+        const idx = i * 3;
+        const ox = origPositions[idx];
+        const oy = origPositions[idx + 1];
 
-      ring1.rotation.z += 0.004;
-      ring2.rotation.z -= 0.003;
+        // Multi-frequency topological wave calculation
+        const wave1 = Math.sin(ox * 0.007 + time * 1.1) * Math.cos(oy * 0.008 + time * 0.9) * 36;
+        const wave2 = Math.sin((ox + oy) * 0.005 + time * 0.7) * 20;
+        const wave3 = Math.cos(Math.sqrt(ox * ox + oy * oy) * 0.006 - time * 0.8) * 16;
+        
+        // Interactive cursor ripple
+        const dx = ox - targetX * 1.5;
+        const dy = oy - targetY * 1.5;
+        const distToMouse = Math.sqrt(dx * dx + dy * dy);
+        const mouseRipple = Math.exp(-distToMouse * 0.004) * Math.sin(distToMouse * 0.02 - time * 3) * 14;
 
-      // Slowly rotate particle field
-      particles.rotation.y += 0.0008;
-      linesMesh.rotation.y = particles.rotation.y;
+        const elevation = wave1 + wave2 + wave3 + mouseRipple;
+        posArray[idx + 2] = elevation;
 
-      // Update particles
-      const pos = geometry.attributes.position.array as Float32Array;
-      for (let i = 0; i < particleCount; i++) {
-        const i3 = i * 3;
-        pos[i3] += velocities[i].x;
-        pos[i3 + 1] += velocities[i].y;
-        pos[i3 + 2] += velocities[i].z;
+        // Dynamic elevation-based color gradient (Obsidian dark -> Teal -> Luminous Cyan)
+        const normH = (elevation + 45) / 90; // Normalize approx 0 to 1
+        const clampedH = Math.max(0, Math.min(1, normH));
 
-        if (pos[i3] > 425 || pos[i3] < -425) velocities[i].x *= -1;
-        if (pos[i3 + 1] > 325 || pos[i3 + 1] < -325) velocities[i].y *= -1;
-        if (pos[i3 + 2] > 325 || pos[i3 + 2] < -325) velocities[i].z *= -1;
+        colArray[idx] = 0.04 + clampedH * 0.18; // Red
+        colArray[idx + 1] = 0.45 + clampedH * 0.55; // Green (Teal)
+        colArray[idx + 2] = 0.55 + clampedH * 0.45; // Blue (Cyan)
       }
-      geometry.attributes.position.needsUpdate = true;
 
-      // Update connection lines
-      let lineVertexIndex = 0;
-      let lineCount = 0;
-      const connectionDist = 100;
+      posAttr.needsUpdate = true;
+      waveGeo.attributes.color.needsUpdate = true;
+      waveGeo.computeVertexNormals();
 
-      for (let i = 0; i < particleCount; i++) {
-        for (let j = i + 1; j < particleCount; j++) {
-          if (lineCount >= maxLines) break;
+      // --- Animate Floating Knowledge Beacons ---
+      const bPos = beaconGeo.attributes.position.array as Float32Array;
+      for (let i = 0; i < beaconCount; i++) {
+        const i3 = i * 3;
+        bPos[i3] += beaconVels[i].x;
+        bPos[i3 + 1] += beaconVels[i].y;
+        bPos[i3 + 2] += beaconVels[i].z;
 
-          const dx = pos[i * 3] - pos[j * 3];
-          const dy = pos[i * 3 + 1] - pos[j * 3 + 1];
-          const dz = pos[i * 3 + 2] - pos[j * 3 + 2];
+        // Soft vertical floating oscillation
+        bPos[i3 + 1] += Math.sin(time * 1.2 + i) * 0.18;
+
+        // Boundary reflection
+        if (bPos[i3] > 420 || bPos[i3] < -420) beaconVels[i].x *= -1;
+        if (bPos[i3 + 1] > 260 || bPos[i3 + 1] < -30) beaconVels[i].y *= -1;
+        if (bPos[i3 + 2] > 320 || bPos[i3 + 2] < -320) beaconVels[i].z *= -1;
+      }
+      beaconGeo.attributes.position.needsUpdate = true;
+
+      // --- Update Evidence Connection Links ---
+      let linkVertexIdx = 0;
+      let activeLinkCount = 0;
+      const linkThreshold = 95;
+
+      for (let i = 0; i < beaconCount; i++) {
+        for (let j = i + 1; j < beaconCount; j++) {
+          if (activeLinkCount >= maxLinks) break;
+
+          const dx = bPos[i * 3] - bPos[j * 3];
+          const dy = bPos[i * 3 + 1] - bPos[j * 3 + 1];
+          const dz = bPos[i * 3 + 2] - bPos[j * 3 + 2];
           const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-          if (dist < connectionDist) {
-            const alpha = 1.0 - dist / connectionDist;
+          if (dist < linkThreshold) {
+            const alpha = 1.0 - dist / linkThreshold;
 
-            linePositions[lineVertexIndex] = pos[i * 3];
-            linePositions[lineVertexIndex + 1] = pos[i * 3 + 1];
-            linePositions[lineVertexIndex + 2] = pos[i * 3 + 2];
+            linkPositions[linkVertexIdx] = bPos[i * 3];
+            linkPositions[linkVertexIdx + 1] = bPos[i * 3 + 1];
+            linkPositions[linkVertexIdx + 2] = bPos[i * 3 + 2];
 
-            lineColors[lineVertexIndex] = 0.08 * alpha;
-            lineColors[lineVertexIndex + 1] = 0.72 * alpha;
-            lineColors[lineVertexIndex + 2] = 0.68 * alpha;
+            linkColors[linkVertexIdx] = 0.08 * alpha;
+            linkColors[linkVertexIdx + 1] = 0.75 * alpha;
+            linkColors[linkVertexIdx + 2] = 0.85 * alpha;
 
-            linePositions[lineVertexIndex + 3] = pos[j * 3];
-            linePositions[lineVertexIndex + 4] = pos[j * 3 + 1];
-            linePositions[lineVertexIndex + 5] = pos[j * 3 + 2];
+            linkPositions[linkVertexIdx + 3] = bPos[j * 3];
+            linkPositions[linkVertexIdx + 4] = bPos[j * 3 + 1];
+            linkPositions[linkVertexIdx + 5] = bPos[j * 3 + 2];
 
-            lineColors[lineVertexIndex + 3] = 0.08 * alpha;
-            lineColors[lineVertexIndex + 4] = 0.72 * alpha;
-            lineColors[lineVertexIndex + 5] = 0.68 * alpha;
+            linkColors[linkVertexIdx + 3] = 0.08 * alpha;
+            linkColors[linkVertexIdx + 4] = 0.75 * alpha;
+            linkColors[linkVertexIdx + 5] = 0.85 * alpha;
 
-            lineVertexIndex += 6;
-            lineCount++;
+            linkVertexIdx += 6;
+            activeLinkCount++;
           }
         }
       }
 
-      lineGeometry.setDrawRange(0, lineCount * 2);
-      lineGeometry.attributes.position.needsUpdate = true;
-      lineGeometry.attributes.color.needsUpdate = true;
+      linkGeo.setDrawRange(0, activeLinkCount * 2);
+      linkGeo.attributes.position.needsUpdate = true;
+      linkGeo.attributes.color.needsUpdate = true;
 
-      camera.lookAt(scene.position);
       renderer.render(scene, camera);
     };
 
     animate();
 
+    // Cleanup resources on unmount
     return () => {
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
       cancelAnimationFrame(animationFrameId);
 
-      outerBoxGeo.dispose();
-      outerEdges.dispose();
-      outerLineMat.dispose();
-      midBoxGeo.dispose();
-      midEdges.dispose();
-      midLineMat.dispose();
-      coreBoxGeo.dispose();
-      coreMat.dispose();
-      ringGeo1.dispose();
-      ringMat1.dispose();
-      ringGeo2.dispose();
-      ringMat2.dispose();
-
-      geometry.dispose();
-      particleMaterial.dispose();
+      waveGeo.dispose();
+      wavePointMat.dispose();
+      wireframeMat.dispose();
       particleTexture.dispose();
-      lineGeometry.dispose();
-      lineMaterial.dispose();
+      beaconGeo.dispose();
+      beaconMat.dispose();
+      linkGeo.dispose();
+      linkMat.dispose();
       renderer.dispose();
 
       if (container.contains(renderer.domElement)) {
