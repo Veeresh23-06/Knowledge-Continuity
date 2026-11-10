@@ -1,6 +1,8 @@
 # KNOWLEDGE CONTINUITY
 > **Evidence-Linked Project Knowledge Handover Platform**
 
+[![Live Demo](https://img.shields.io/badge/Demo-Live%20on%20Vercel-success?style=flat&logo=vercel)](https://knowledge-continuity-rho.vercel.app)
+[![API Docs](https://img.shields.io/badge/API-FastAPI%20Swagger-009688?style=flat&logo=fastapi)](https://knowledge-continuity-api.onrender.com/docs)
 [![Next.js](https://img.shields.io/badge/Frontend-Next.js%2015-black?style=flat&logo=next.js)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![TypeScript](https://img.shields.io/badge/Language-TypeScript-3178C6?style=flat&logo=typescript)](https://www.typescriptlang.org/)
@@ -236,3 +238,6 @@ python backend/test_phase6_evidence_conflicts.py
 
 - **Team**: Team-Web_hunters
 - **Project**: Knowledge Continuity
+- **GitHub Repository**: [https://github.com/Veeresh23-06/Knowledge-Continuity](https://github.com/Veeresh23-06/Knowledge-Continuity)
+- **Live Application**: [https://knowledge-continuity-rho.vercel.app](https://knowledge-continuity-rho.vercel.app)
+- **Interactive API Docs**: [https://knowledge-continuity-api.onrender.com/docs](https://knowledge-continuity-api.onrender.com/docs)
